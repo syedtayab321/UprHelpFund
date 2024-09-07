@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:upr_fund_collection/DatabaseDataControllers/ManagingCrDataController.dart';
+import 'package:upr_fund_collection/DatabaseDataControllers/ManagingAdsaDataController.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 
-class ClassReporterForm extends StatelessWidget {
+class AdsaForm extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final formController = Get.put(FormController());
-
+  final String? name,email,department,campus;
+  AdsaForm({this.name,this.email,this.department,this.campus});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Class Reporter'),
+        title: Text('Add Adsa'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -22,24 +23,21 @@ class ClassReporterForm extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTextField('Name', formController.nameController, TextInputType.text),
+                _buildTextField('Adsa Name',formController.nameController, TextInputType.text),
                 SizedBox(height: 16),
-                _buildTextField('Roll No', formController.rollNoController, TextInputType.number),
+                _buildTextField('Adsa Email', formController.EmailController, TextInputType.text),
                 SizedBox(height: 16),
                 _buildDropdown('Department', formController.departments,
                     formController.selectedDepartment, 'Please select a department'),
                 SizedBox(height: 16),
-                _buildDropdown('Semester', formController.semesters,
-                    formController.selectedSemester, 'Please select a semester'),
-                SizedBox(height: 16),
-                _buildDropdown('Session', formController.sessions,
-                    formController.selectedSession, 'Please select a session'),
+                _buildDropdown('Campus', formController.campuses,
+                    formController.selectedCampus, 'Please select a Campus'),
                 SizedBox(height: 20),
                 Center(
                   child: Obx(() => formController.isloading.value
                       ? CircularProgressIndicator()
                       : Elevated_button(
-                    text: 'Add CR',
+                    text: 'Add Adsa',
                     color: Colors.white,
                     path: () {
                       if (_formKey.currentState!.validate()) {
@@ -110,13 +108,12 @@ class ClassReporterForm extends StatelessWidget {
 
 class FormController extends GetxController {
   var selectedDepartment = ''.obs;
-  var selectedSemester = ''.obs;
-  var selectedSession = ''.obs;
+  var selectedCampus = ''.obs;
   var isloading = false.obs;
 
   final nameController = TextEditingController();
-  final rollNoController = TextEditingController();
-  final ManagingCrDataController _additioncontroller = Get.put(ManagingCrDataController());
+  final EmailController = TextEditingController();
+  final ManagingAdsaDataController _additioncontroller = Get.put(ManagingAdsaDataController());
   final List<String> departments = [
     'Computer Science',
     'Data Science',
@@ -125,36 +122,24 @@ class FormController extends GetxController {
     'Mechanical Engineering',
   ];
 
-  final List<String> semesters = [
-    'First Semester',
-    'Second Semester',
-    'Third Semester',
-    'Fourth Semester',
-    'Fifth Semester',
-    'Sixth Semester',
-    'Seventh Semester',
-    'Eighth Semester',
+  final List<String> campuses = [
+        'Basic and Applied Sciences',
+        'Cs and IT',
+        'Agriculture',
+        'Botany',
+        'Applied Sciences',
   ];
 
-  final List<String> sessions = List.generate(41, (index) => '${2020 + index}-${2024 + index}');
-
   void submitForm() async {
-    final rollno = int.tryParse(rollNoController.text);
     isloading.value = true;
-    if (rollno == null) {
-      showErrorSnackbar('Please enter a valid roll number');
-      return;
-    }else{
-      await  _additioncontroller.addCrData(
-        CrName: nameController.text,
+      await  _additioncontroller.addAdsaData(
+        AdsaName: nameController.text,
+        AdsaEmail:EmailController.text,
         department: selectedDepartment.value,
-        rollno: rollno,
-        session: selectedSession.value,
-        semester: selectedSemester.value,
+        campus: selectedCampus.value,
       );
       isloading.value = false;
       showSuccessSnackbar('Cr Data added successfully!');
       Get.back();
-    }
   }
 }

@@ -24,14 +24,11 @@ class SignUpPage extends StatelessWidget {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-
-        // Send email verification
         User? user = userCredential.user;
         if (user != null && !user.emailVerified) {
           await user.sendEmailVerification();
           showSuccessSnackbar('Email verification send Successfully check You email');
 
-          // Save user data in Firestore after verification
           _firestore.collection('Users').doc(user.uid).set({
             'name': _nameController.text.trim(),
             'email': _emailController.text.trim(),

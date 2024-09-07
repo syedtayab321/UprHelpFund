@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:upr_fund_collection/Controllers/DonationRequestAddController.dart';
+import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
+import 'package:upr_fund_collection/DatabaseDataControllers/DonationRequestAddController.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 
@@ -10,7 +11,7 @@ class AddDonationPage extends StatelessWidget {
 
   String? _personName;
   String? _reason;
-  int? _amountNeeded;
+  double? _amountNeeded;
   String? _accountNumber;
   String? _accountHolderName;
   String? _requestBy;
@@ -52,7 +53,7 @@ class AddDonationPage extends StatelessWidget {
                   _buildTextField(
                     label: 'Amount Needed',
                     keyboardType: TextInputType.number,
-                    onChanged: (value) => _amountNeeded = int.tryParse(value),
+                    onChanged: (value) => _amountNeeded = double.tryParse(value),
                     validator: (value) =>
                     value == null || value.isEmpty ? 'Please enter the amount needed' : null,
                   ),
@@ -68,14 +69,14 @@ class AddDonationPage extends StatelessWidget {
                     validator: (value) =>
                     value == null || value.isEmpty ? 'Please enter the account holder name' : null,
                   ),
-                  _buildDropdown(
-                    label: 'Request By',
-                    value: _requestBy,
-                    items: ['Student', 'ADSA', 'CR', 'Other'],
-                    onChanged: (value) => _requestBy = value,
-                    validator: (value) =>
-                    value == null || value.isEmpty ? 'Please select a request by' : null,
-                  ),
+                  // _buildDropdown(
+                  //   label: 'Request By',
+                  //   value: _requestBy,
+                  //   items: ['Admin','Student', 'ADSA', 'CR', 'Other'],
+                  //   onChanged: (value) => _requestBy = value,
+                  //   validator: (value) =>
+                  //   value == null || value.isEmpty ? 'Please select a request by' : null,
+                  // ),
                   _buildDropdown(
                     label: 'Bank Name',
                     value: _bankName,
@@ -85,23 +86,30 @@ class AddDonationPage extends StatelessWidget {
                     value == null || value.isEmpty ? 'Please select a payment method' : null,
                   ),
                   SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        // Implement submit functionality
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade700,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      minimumSize: Size(double.infinity, 48),
-                    ),
-                    child: Text('Submit', style: TextStyle(fontSize: 18)),
-                  ),
+                   Obx((){
+                     return  _controller.isloading.value  ? CircularProgressIndicator():
+                     Elevated_button(
+                         text: 'Submit', color: Colors.white, radius: 10,padding: 10,backcolor: Colors.teal,
+                         path: ()async{
+                           if (_formKey.currentState?.validate() ?? false) {
+                             await _controller.addDonationRequest(
+                               personName: _personName!,
+                               reason: _reason!,
+                               amountNeeded: _amountNeeded!,
+                               accountNumber: _accountNumber!,
+                               accountHolderName: _accountHolderName!,
+                               request_by: 'Admin',
+                               bank_name: _bankName!,
+                               status:'Approved',
+                             ).then((value){
+                               showSuccessSnackbar('Success Donation request added successfully!');
+                               _controller.isloading.value=false;
+                               Get.back();
+                             });
+                           }
+                         }
+                     );
+                   })
                 ],
               ),
             ),

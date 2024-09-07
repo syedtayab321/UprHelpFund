@@ -1,45 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
+import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
+import 'package:upr_fund_collection/DatabaseDataControllers/ManagingCrDataController.dart';
+import 'package:upr_fund_collection/Models/CrModal.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/ManageCrs/AddCr.dart';
 
-class ClassReporter {
-  final String profilePhoto;
-  final String name;
-  final String rollNumber;
-  final String department;
-  final String semester;
-  final String session;
-
-  ClassReporter({
-    required this.profilePhoto,
-    required this.name,
-    required this.rollNumber,
-    required this.department,
-    required this.semester,
-    required this.session,
-  });
-}
-
 class ClassReportersPage extends StatelessWidget {
-  final List<ClassReporter> reporters = [
-    ClassReporter(
-      profilePhoto: 'https://via.placeholder.com/150',
-      name: 'John Doe',
-      rollNumber: '123456',
-      department: 'Computer Science',
-      semester: '6th',
-      session: '2021-2024',
-    ),
-    // Add more ClassReporter objects here
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: TextWidget(title: 'Class Reporters',color: Colors.white,),
+        title: TextWidget(
+          title: 'Class Reporters',
+          color: Colors.white,
+        ),
         backgroundColor: Colors.teal.shade700,
         actions: [
           Padding(
@@ -61,22 +38,61 @@ class ClassReportersPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: reporters.length,
-          itemBuilder: (context, index) {
-            return ClassReporterCard(reporter: reporters[index]);
+        child: StreamBuilder<List<ClassReporter>>(
+          stream: _fetchClassReporters(), // Add your stream source here
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('No Class Reporters found.'));
+            } else {
+              return ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  return ClassReporterCard(reporter: snapshot.data![index]);
+                },
+              );
+            }
           },
         ),
       ),
     );
   }
+  Stream<List<ClassReporter>> _fetchClassReporters() async* {
+    // Fetch all documents in the 'classReporters' collection
+    final classReporterDocs = await FirebaseFirestore.instance
+        .collection('classReporters')
+        .get();
+
+    // Initialize a list to store ClassReporter objects
+    List<ClassReporter> allClassReporters = [];
+
+    // For each document in the 'classReporters' collection
+    for (var doc in classReporterDocs.docs) {
+      // Fetch the subcollection 'crs' for each document
+      var crsSnapshot = await doc.reference.collection('crs').get();
+
+      // Convert each document in 'crs' subcollection to ClassReporter object and add to the list
+      var classReporters = crsSnapshot.docs
+          .map((crsDoc) => ClassReporter.fromFirestore(crsDoc.data()))
+          .toList();
+
+      allClassReporters.addAll(classReporters);
+    }
+
+    // Return the complete list of ClassReporter objects
+    yield allClassReporters;
+  }
+
 }
+
 
 class ClassReporterCard extends StatelessWidget {
   final ClassReporter reporter;
-
   ClassReporterCard({required this.reporter});
-
+  final ManagingCrDataController _controller=Get.put(ManagingCrDataController());
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -110,7 +126,7 @@ class ClassReporterCard extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     TextWidget(
-                      title: reporter.rollNumber,
+                      title:'Roll No:  ${reporter.rollNumber.toString()}',
                       size: 14,
                       color: Colors.teal.shade600,
                     ),
@@ -139,7 +155,15 @@ class ClassReporterCard extends StatelessWidget {
                 Elevated_button(
                   text: 'Delete',
                   color: Colors.white,
-                  path: () {},
+                  path: () async{
+                    try{
+                      await  _controller.DeleteCrData(reporter.department,reporter.semester);
+                      showSuccessSnackbar('Data Deleted Sucessfully');
+                    }
+                    catch (e){
+                      showErrorSnackbar(e.toString());
+                    }
+                  },
                   radius: 10,
                   padding: 3,
                   width: 80,

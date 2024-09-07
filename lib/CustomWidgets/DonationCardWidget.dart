@@ -5,7 +5,7 @@ import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 class DonationCard extends StatelessWidget {
   final String personName;
   final String reason;
-  final int amountNeeded;
+  final double amountNeeded;
   final String amountReceived;
   final String accountNumber;
   final String accountHolderName;
