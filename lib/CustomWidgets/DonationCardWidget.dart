@@ -167,7 +167,7 @@ class DonationCard extends StatelessWidget {
                 Elevated_button(
                   text: 'Delete',
                   color: Colors.white,
-                  path: (){},
+                  path:onDelete,
                   radius: 10,
                   padding: 3,
                   width: 100,
@@ -177,7 +177,7 @@ class DonationCard extends StatelessWidget {
                 Elevated_button(
                   text: 'View Donors',
                   color: Colors.white,
-                  path: (){},
+                  path: onViewDonors,
                   radius: 10,
                   padding: 3,
                   width: 140,

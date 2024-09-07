@@ -3,11 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/DonationCardWidget.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
+import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
+import 'package:upr_fund_collection/DatabaseDataControllers/DonationRequestAddController.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/ManageDonations/AddDonationRequest.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/ManageDonations/ViewDonors.dart';
 
 class DonationPage extends StatelessWidget {
+  final DonationRequestAddController _controller = Get.put(DonationRequestAddController());
+  Stream<List<QueryDocumentSnapshot>> _getApprovedDonationsStream() async* {
+    // Fetch the main documents in 'donation_requests'
+    final mainDocsStream = FirebaseFirestore.instance
+        .collection('donation_requests')
+        .snapshots();
+
+    await for (var mainDocs in mainDocsStream) {
+      List<QueryDocumentSnapshot> approvedDonations = [];
+
+      // For each main document, get the sub-collection 'donations'
+      for (var doc in mainDocs.docs) {
+        var subCollectionSnapshot = await doc.reference
+            .collection('Persons')
+            .where('status', isEqualTo: 'Approved') // Filter by status
+            .get();
+
+        // Add approved sub-documents to the list
+        approvedDonations.addAll(subCollectionSnapshot.docs);
+      }
+
+      // Yield the list of approved donations for the StreamBuilder to use
+      yield approvedDonations;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,20 +65,18 @@ class DonationPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('donation_requests') // Replace with your collection name
-              .where('status', isEqualTo: 'Approved') // Filter by status
-              .snapshots(),
+        child: StreamBuilder<List<QueryDocumentSnapshot>>(
+          stream: _getApprovedDonationsStream(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             }
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Center(child: Text('No approved donations found.'));
             }
 
-            final approvedDonations = snapshot.data!.docs;
+            final approvedDonations = snapshot.data!;
 
             // Calculate total needed and donated amounts
             double totalNeededAmount = approvedDonations.fold(
@@ -67,14 +93,14 @@ class DonationPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextWidget(
-                 title:  'Total Needed Amount: ${totalNeededAmount.toStringAsFixed(2)}',
+                  title: 'Total Needed Amount: ${totalNeededAmount.toStringAsFixed(2)}',
                   size: 18,
-                    weight: FontWeight.bold,
+                  weight: FontWeight.bold,
                 ),
                 TextWidget(
-                 title:  'Total Donated Amount: ${totalDonatedAmount.toStringAsFixed(2)}',
+                  title: 'Total Donated Amount: ${totalDonatedAmount.toStringAsFixed(2)}',
                   size: 18,
-                    weight: FontWeight.bold,
+                  weight: FontWeight.bold,
                 ),
                 SizedBox(height: 20),
                 Expanded(
@@ -96,8 +122,14 @@ class DonationPage extends StatelessWidget {
                           requested_by: data['request_by'] ?? '',
                           amountNeeded: data['needed_amount']?.toDouble() ?? 0.0,
                           amountReceived: data['amount_received'].toString(),
-                          onDelete: () {
-                            // Implement delete functionality
+                          onDelete: () async{
+                            try{
+                              await _controller.DeleteDonationsData(data['needyPersonName'],data['request_by']);
+                              showSuccessSnackbar('Data deleted Sucessfully');
+                            }
+                            catch(e){
+                              showErrorSnackbar(e.toString());
+                            }
                           },
                           onViewDonors: () {
                             Get.to(AdminViewDonorsPage());

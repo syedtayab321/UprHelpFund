@@ -18,7 +18,8 @@ class DonationRequestAddController extends GetxController {
   }) async {
     isloading.value=true;
     try {
-      await _firestore.collection('donation_requests').doc(personName).set({
+      await _firestore.collection('donation_requests').doc(request_by).set({});
+      await _firestore.collection('donation_requests').doc(request_by).collection('Persons').doc(personName).set({
         'needyPersonName': personName,
         'reason': reason,
         'needed_amount': amountNeeded,
@@ -36,5 +37,9 @@ class DonationRequestAddController extends GetxController {
     } finally{
       Get.back();
     }
+  }
+
+  Future<void>DeleteDonationsData(String personName,String request_by)async{
+    await _firestore.collection('donation_requests').doc(request_by).collection('Persons').doc(personName).delete();
   }
 }
