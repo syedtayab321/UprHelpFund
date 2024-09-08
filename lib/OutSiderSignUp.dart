@@ -7,13 +7,14 @@ import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 import 'package:upr_fund_collection/Login.dart';
 
-class SignUpPage extends StatelessWidget {
+class OutsiderSignUpPage extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   Future<void> _signUp() async {
@@ -33,10 +34,11 @@ class SignUpPage extends StatelessWidget {
             'name': _nameController.text.trim(),
             'email': _emailController.text.trim(),
             'role': 'User',
+            'address':_addressController.text,
             'uid': user.uid,
           });
           await _auth.signOut();
-          Get.off(LoginPage());
+          Get.offAll(LoginPage());
         }
       } on FirebaseAuthException catch (e) {
         showErrorSnackbar(e.message.toString());
@@ -117,6 +119,22 @@ class SignUpPage extends StatelessWidget {
                       }
                       if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                         return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    controller: _addressController,
+                    decoration: InputDecoration(
+                      labelText: 'Address',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your Address';
                       }
                       return null;
                     },

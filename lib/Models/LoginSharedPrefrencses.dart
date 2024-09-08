@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:upr_fund_collection/Login.dart';
 import 'package:upr_fund_collection/Models/AuthenticationModel.dart';
+import 'package:upr_fund_collection/splashscreen.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -46,11 +46,11 @@ class AuthService {
     return prefs.getString('uid');
   }
 
-  // Sign out
   Future<void> signOut() async {
     await _auth.signOut();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('uid');
-    Get.off(LoginPage());
+    Get.offAll(SplashScreen()); // Use Get.offAll instead of Get.off
   }
+
 }

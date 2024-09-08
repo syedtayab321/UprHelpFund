@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:intl/intl.dart';
 import 'package:upr_fund_collection/DatabaseDataControllers/DonationRequestAddController.dart';
 
 class DonationRequest {
@@ -30,7 +30,6 @@ class DonationRequest {
     required this.status,
   });
 
-  // Create a factory constructor to instantiate DonationRequest from Firestore DocumentSnapshot
   factory DonationRequest.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return DonationRequest(
@@ -63,28 +62,49 @@ class DonationRequestsPage extends StatelessWidget {
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('donation_requests')
-              .where('status', isEqualTo: 'Pending')
               .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+          builder: (context, parentSnapshot) {
+            if (parentSnapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             }
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
+            if (parentSnapshot.hasError) {
+              return Center(child: Text('Error: ${parentSnapshot.error}'));
             }
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            if (!parentSnapshot.hasData || parentSnapshot.data!.docs.isEmpty) {
               return Center(child: Text('No donation requests found.'));
             }
 
-            List<DonationRequest> requests = snapshot.data!.docs
-                .map((doc) => DonationRequest.fromFirestore(doc))
-                .toList();
+            List<Widget> requestCards = [];
 
-            return ListView.builder(
-              itemCount: requests.length,
-              itemBuilder: (context, index) {
-                return DonationRequestCard(request: requests[index]);
-              },
+            for (var parentDoc in parentSnapshot.data!.docs) {
+              requestCards.add(
+                StreamBuilder<QuerySnapshot>(
+                  stream: parentDoc.reference.collection('Persons').where('status', isEqualTo: 'Pending').snapshots(),
+                  builder: (context, subSnapshot) {
+                    if (subSnapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    if (subSnapshot.hasError) {
+                      return Center(child: Text('Error: ${subSnapshot.error}'));
+                    }
+                    if (!subSnapshot.hasData) {
+                      return Center(child: Text('No sub-donation requests found.'));
+                    }
+
+                    List<DonationRequest> requests = subSnapshot.data!.docs
+                        .map((doc) => DonationRequest.fromFirestore(doc))
+                        .toList();
+
+                    return Column(
+                      children: requests.map((request) => DonationRequestCard(request: request)).toList(),
+                    );
+                  },
+                ),
+              );
+            }
+
+            return ListView(
+              children: requestCards,
             );
           },
         ),
@@ -96,6 +116,7 @@ class DonationRequestsPage extends StatelessWidget {
 class DonationRequestCard extends StatelessWidget {
   final DonationRequest request;
   final DonationRequestAddController _controller = Get.put(DonationRequestAddController());
+
   DonationRequestCard({required this.request});
 
   @override
@@ -114,12 +135,21 @@ class DonationRequestCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildInfoRow(Icons.person_outline, 'Needy Person: ', request.needyPersonName),
+            Divider(height: 10,),
             _buildInfoRow(Icons.assignment, 'Reason: ', request.reason),
+            Divider(height: 10,),
             _buildInfoRow(Icons.person, 'Account Holder Name: ', request.accountHolderName),
+            Divider(height: 10,),
             _buildInfoRow(Icons.account_balance_wallet_outlined, 'Account Number: ', request.accountNumber),
+            Divider(height: 10,),
             _buildInfoRow(Icons.account_balance_outlined, 'Bank Name: ', request.bankName),
+            Divider(height: 10,),
+            _buildInfoRow(Icons.person_outline, 'Requested By: ', request.requesterName),
+            Divider(height: 10,),
             _buildInfoRow(Icons.monetization_on, 'Needed Amount: ', '\$${request.neededAmount.toStringAsFixed(2)}'),
-            _buildInfoRow(Icons.calendar_today, 'Request Date: ',DateFormat('yyyy-MM-dd').format(request.requestDate)),
+            Divider(height: 10,),
+            _buildInfoRow(Icons.calendar_today, 'Request Date: ', DateFormat('yyyy-MM-dd').format(request.requestDate)),
+            Divider(height: 10,),
             _buildInfoRow(Icons.approval, 'Status: ', request.status),
             SizedBox(height: 16),
             Row(
@@ -128,8 +158,9 @@ class DonationRequestCard extends StatelessWidget {
                 Elevated_button(
                   text: 'Reject',
                   color: Colors.white,
-                  path: ()async  {
-                    await FirebaseFirestore.instance.collection('donation_requests').doc(request.needyPersonName).delete();
+                  path: () async {
+                    await FirebaseFirestore.instance.collection('donation_requests').
+                        doc(request.requesterName).collection('Persons').doc(request.needyPersonName).delete();
                   },
                   radius: 10,
                   padding: 3,
@@ -141,26 +172,31 @@ class DonationRequestCard extends StatelessWidget {
                   text: 'Approve',
                   color: Colors.white,
                   path: () {
-                    Obx((){
-                      return  _controller.isloading.value  ? CircularProgressIndicator():
-                      Elevated_button(
-                          text: 'Submit', color: Colors.white, radius: 10,padding: 10,backcolor: Colors.teal,
-                          path: ()async{
-                              await _controller.addDonationRequest(
-                                personName: request.needyPersonName,
-                                reason: request.reason,
-                                amountNeeded: request.neededAmount,
-                                accountNumber: request.accountNumber,
-                                accountHolderName: request.accountHolderName,
-                                request_by: request.requesterName,
-                                bank_name: request.bankName,
-                                status: 'Approved',
-                              ).then((value){
-                                showSuccessSnackbar('Success Donation request added successfully!');
-                                _controller.isloading.value=false;
-                                Get.back();
-                              });
-                            }
+                    Obx(() {
+                      return _controller.isloading.value
+                          ? CircularProgressIndicator()
+                          : Elevated_button(
+                        text: 'Submit',
+                        color: Colors.white,
+                        radius: 10,
+                        padding: 10,
+                        backcolor: Colors.teal,
+                        path: () async {
+                          await _controller.addDonationRequest(
+                            personName: request.needyPersonName,
+                            reason: request.reason,
+                            amountNeeded: request.neededAmount,
+                            accountNumber: request.accountNumber,
+                            accountHolderName: request.accountHolderName,
+                            request_by: request.requesterName,
+                            bank_name: request.bankName,
+                            status: 'Approved',
+                          ).then((value) {
+                            showSuccessSnackbar('Success Donation request added successfully!');
+                            _controller.isloading.value = false;
+                            Get.back();
+                          });
+                        },
                       );
                     });
                   },

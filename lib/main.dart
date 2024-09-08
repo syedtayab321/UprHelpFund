@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DonationRequestDetails.dart';
+import 'package:upr_fund_collection/Portals/DonorPortal/MakeDonationPage.dart';
 import 'package:upr_fund_collection/splashscreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';

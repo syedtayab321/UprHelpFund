@@ -1,33 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // Import intl for date formatting
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DonationRequestDetails.dart';
+import 'package:upr_fund_collection/Portals/DonorPortal/MakeDonationPage.dart';
 import 'package:upr_fund_collection/Portals/DonorPortal/MakeDonationRequest.dart';
 
 class DonorHomePage extends StatelessWidget {
-  // Dummy data for donation requests
-  final List<Map<String, String>> donationRequests = [
-    {
-      'requestedBy': 'John Doe',
-      'profession': 'Student',
-      'needyName': 'Jane Smith',
-      'needyAddress': '123 Elm Street',
-      'reason': 'Medical Emergency',
-      'amountNeeded': '500',
-      'requestedDate': '2024-08-30', // Added date for demonstration
-    },
-    {
-      'requestedBy': 'Mary Johnson',
-      'profession': 'Teacher',
-      'needyName': 'Paul Brown',
-      'needyAddress': '456 Oak Avenue',
-      'reason': 'Educational Support',
-      'amountNeeded': '300',
-      'requestedDate': '2024-08-29', // Added date for demonstration
-    },
-    // Add more dummy data as needed
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,15 +14,26 @@ class DonorHomePage extends StatelessWidget {
         children: [
           _buildHeader(context),
           Expanded(
-            child: ListView.builder(
-              itemCount: donationRequests.length,
-              itemBuilder: (context, index) {
-                var requestData = donationRequests[index];
-                return DonationRequestTile(
-                  requestedBy: requestData['requestedBy'] ?? 'Unknown',
-                  reason: requestData['reason'] ?? 'No reason provided',
-                  requestedDate: requestData['requestedDate'] ?? 'Unknown date',
-                  requestId: 'dummyRequestId_$index',
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('donation_requests')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('No donation requests found.'));
+                }
+
+                var mainDocs = snapshot.data!.docs;
+
+                return ListView.builder(
+                  itemCount: mainDocs.length,
+                  itemBuilder: (context, index) {
+                    var mainDoc = mainDocs[index];
+                    return SubCollectionDonationRequests(mainDoc.id); // Pass document ID
+                  },
                 );
               },
             ),
@@ -76,7 +66,7 @@ class DonorHomePage extends StatelessWidget {
           Center(
             child: ElevatedButton(
               onPressed: () {
-               Get.to(DonorsMakeDonationRequest());
+                Get.to(DonorsMakeDonationRequest());
               },
               child: Text('Make a Donation Request'),
               style: ElevatedButton.styleFrom(
@@ -96,47 +86,84 @@ class DonorHomePage extends StatelessWidget {
   }
 }
 
+// Widget to fetch and display sub-collection data
+class SubCollectionDonationRequests extends StatelessWidget {
+  final String mainDocId;
+
+  SubCollectionDonationRequests(this.mainDocId);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('donation_requests')
+          .doc(mainDocId) // Access the main document by ID
+          .collection('Persons') // Sub-collection
+          .where('status', isEqualTo: 'Approved') // Only fetch 'Approved' requests
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        var subRequests = snapshot.data!.docs;
+
+        return Column(
+          children: subRequests.map((doc) {
+            var requestData = doc.data() as Map<String, dynamic>;
+            return DonationRequestTile(
+              needyPersonName: requestData['needyPersonName'] ?? 'Unknown',
+              reason: requestData['reason'] ?? 'No reason provided',
+              requestedDate: requestData['created_at'], // Keep as Timestamp
+              requestData: requestData,
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+}
+
 class DonationRequestTile extends StatelessWidget {
-  final String requestedBy;
+  final String needyPersonName;
   final String reason;
-  final String requestedDate;
-  final String requestId;
+  final Timestamp requestedDate; // Now it's a Timestamp
+  final Map<String, dynamic> requestData;
 
   const DonationRequestTile({
     Key? key,
-    required this.requestedBy,
+    required this.needyPersonName,
     required this.reason,
     required this.requestedDate,
-    required this.requestId,
+    required this.requestData,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Convert the Timestamp to DateTime
+    DateTime dateTime = requestedDate.toDate();
+    String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime); // Format the date
+
     return InkWell(
-      onTap: (){
-        Get.to(DonationDetailPage());
+      onTap: () {
+        Get.to(MakeDonationPage(), arguments: requestData); // Pass the full request data to the next page
       },
       child: ListTile(
         tileColor: Colors.grey.shade200,
         contentPadding: EdgeInsets.all(16.0),
         leading: Icon(Icons.request_page, color: Colors.teal),
         title: Text(
-          requestedBy,
+          needyPersonName,
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Reason: $reason', style: TextStyle(fontSize: 16)),
-            Text('Requested Date: $requestedDate', style: TextStyle(fontSize: 14, color: Colors.grey)),
+            Text('Requested Date: $formattedDate', style: TextStyle(fontSize: 14, color: Colors.grey)), // Display the formatted date
           ],
         ),
-        trailing: IconButton(
-          icon: Icon(Icons.arrow_forward_ios, color: Colors.teal),
-          onPressed: () {
-            Get.to(DonationDetailPage());
-          },
-        ),
+        trailing: Icon(Icons.arrow_forward_ios, color: Colors.teal),
       ),
     );
   }

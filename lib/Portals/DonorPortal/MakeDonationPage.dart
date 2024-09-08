@@ -1,21 +1,27 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/MakeDonationRequest.dart';
 
-class DonationDetailPage extends StatelessWidget {
+class MakeDonationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Sample data
-    final requestId = '23';
-    final requestedBy = 'John Doe';
-    final profession = 'Teacher';
-    final needyName = 'Jane Smith';
-    final needyAddress = '123 Elm Street, Springfield';
-    final reason = 'Medical emergency';
-    final amountNeeded = '150';
-    final requestedDate = 'August 30, 2024';
+    // Get the passed arguments (request data)
+    final requestData = Get.arguments as Map<String, dynamic>;
+
+    // Extract the data from the passed arguments
+    final requestId = requestData['requestId'] ?? 'N/A';
+    final requestedBy = requestData['request_by'] ?? 'N/A';
+    final needyName = requestData['needyPersonName'] ?? 'N/A';
+    final DonatedAmount= requestData['amount_received'] ?? 'N/A';
+    final reason = requestData['reason'] ?? 'N/A';
+    final amountNeeded = requestData['needed_amount'] ?? 'N/A';
+    final Timestamp requestedDate = requestData['created_at'] ?? 'N/A';
+
+    DateTime dateTime = requestedDate.toDate();
+    String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
 
     return Scaffold(
       appBar: AppBar(
@@ -44,67 +50,55 @@ class DonationDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Requested By: $requestedBy',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  TextWidget(
+                    title: 'Requested By: $requestedBy',
+                    size: 20,
+                      weight: FontWeight.bold,
                       color: Colors.teal.shade900,
                     ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Profession: $profession',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
                   SizedBox(height: 16),
-                  Text(
-                    'Needy Person:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  TextWidget(
+                    title: 'Needy Person:',
+                    size: 18,
+                     weight: FontWeight.bold,
                       color: Colors.teal.shade800,
-                    ),
                   ),
-                  Text('Name: $needyName', style: TextStyle(fontSize: 16)),
-                  Text('Address: $needyAddress', style: TextStyle(fontSize: 16)),
+                  TextWidget(title: 'Name: $needyName', size: 16),
                   SizedBox(height: 16),
-                  Text(
-                    'Reason:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  TextWidget(
+                    title:'Reason:',
+                    size: 18,
+                      weight: FontWeight.bold,
                       color: Colors.teal.shade800,
-                    ),
                   ),
-                  Text(reason, style: TextStyle(fontSize: 16)),
+                  TextWidget(title: reason, size: 16),
                   SizedBox(height: 16),
-                  Text(
-                    'Amount Needed: \$${amountNeeded}',
-                    style: TextStyle(
-                      fontSize: 18,
+                  TextWidget(
+                    title: 'Amount Needed: \$${amountNeeded}',
+                    size: 18,
                       color: Colors.red.shade700,
-                      fontWeight: FontWeight.bold,
-                    ),
+                      weight: FontWeight.bold,
+                  ),
+                  TextWidget(
+                   title:  'Amount Recived: \$${DonatedAmount}',
+                    size: 18,
+                      color: Colors.green,
+                      weight: FontWeight.bold,
                   ),
                   SizedBox(height: 16),
-                  Text(
-                    'Requested Date: $requestedDate',
-                    style: TextStyle(
-                      fontSize: 16,
+                  TextWidget(
+                   title:  'Requested Date: $formattedDate',
+                    size: 16,
                       color: Colors.grey.shade600,
-                    ),
                   ),
                 ],
               ),
             ),
             SizedBox(height: 20),
             Center(
-              child:Elevated_button(
-                path:(){
+              child: Elevated_button(
+                path: () {
+                  // Handle donate button logic
                 },
                 color: Colors.white,
                 backcolor: Colors.teal.shade700,

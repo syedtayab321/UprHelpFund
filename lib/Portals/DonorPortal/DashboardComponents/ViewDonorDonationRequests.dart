@@ -1,110 +1,122 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 
 class DonorDonationRequestPage extends StatelessWidget {
-  // Sample data for donation requests
-  final List<Map<String, dynamic>> donationRequests = [
-    {
-      'id': '1',
-      'requestedBy': 'John Doe',
-      'amount': 150,
-      'status': 'Pending',
-      'progress': 0.0,
-    },
-    {
-      'id': '2',
-      'requestedBy': 'Jane Smith',
-      'amount': 300,
-      'status': 'Approved',
-      'progress': 0.7,
-    },
-    {
-      'id': '3',
-      'requestedBy': 'Mike Johnson',
-      'amount': 200,
-      'status': 'Rejected',
-      'progress': 0.0,
-    },
-  ];
+  // Function to get the stream for donation requests from sub-collections
+  Stream<List<QueryDocumentSnapshot>> _getDonationRequestsStream() async* {
+    final donationRequestsStream =
+    FirebaseFirestore.instance.collection('donation_requests').snapshots();
+
+    await for (var snapshot in donationRequestsStream) {
+      List<QueryDocumentSnapshot> donationRequests = [];
+
+      for (var doc in snapshot.docs) {
+        var subCollectionSnapshot = await doc.reference.collection('Persons').where('request_by',isEqualTo:'Student').get();
+        donationRequests.addAll(subCollectionSnapshot.docs);
+      }
+
+      yield donationRequests;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(
-        padding: EdgeInsets.all(16.0),
-        itemCount: donationRequests.length,
-        itemBuilder: (context, index) {
-          final request = donationRequests[index];
-          return Card(
-            margin: EdgeInsets.symmetric(vertical: 8.0),
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Requested By: ${request['requestedBy']}',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal.shade900,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Amount: \$${request['amount']}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade800,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Status: ${request['status']}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: _getStatusColor(request['status']),
-                    ),
-                  ),
-                  if (request['status'] == 'Approved') ...[
-                    SizedBox(height: 16),
-                    Text(
-                      'Progress:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal.shade800,
+      appBar: AppBar(
+        title: Text('Donation Requests'),
+      ),
+      body: StreamBuilder<List<QueryDocumentSnapshot>>(
+        stream: _getDonationRequestsStream(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No donation requests found.'));
+          }
+
+          final donationRequests = snapshot.data!;
+
+          return ListView.builder(
+            padding: EdgeInsets.all(16.0),
+            itemCount: donationRequests.length,
+            itemBuilder: (context, index) {
+              final request = donationRequests[index].data() as Map<String, dynamic>;
+
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 8.0),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget(
+                       title:  'Requested By: ${request['request_by']}',
+                        size: 18,
+                          weight: FontWeight.bold,
+                          color: Colors.teal.shade900,
+                        ),
+                      SizedBox(height: 8),
+                      TextWidget(
+                        title:  'Needy Person: ${request['needyPersonName']}',
+                        size: 18,
+                        weight: FontWeight.bold,
+                        color: Colors.brown,
                       ),
-                    ),
-                    SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: request['progress'],
-                      backgroundColor: Colors.teal.shade100,
-                      color: Colors.teal.shade700,
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '${(request['progress'] * 100).toInt()}% of the goal raised',
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                    ),
-                  ],
-                  SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red.shade700),
-                      onPressed: () {
-                        _deleteRequest(request['id']);
-                      },
-                    ),
+                      SizedBox(height: 8),
+                      TextWidget(
+                        title: 'Needed Amount: \$${request['needed_amount']}',
+                        size: 16,
+                          color: Colors.grey.shade800,
+                      ),
+                      SizedBox(height: 8),
+                      TextWidget(
+                        title: 'Status: ${request['status']}',
+                        size: 16,
+                          weight: FontWeight.bold,
+                          color: _getStatusColor(request['status']),
+                      ),
+                      if (request['status'] == 'Approved') ...[
+                        SizedBox(height: 16),
+                        TextWidget(
+                          title: 'Progress:',
+                          size: 16,
+                            weight: FontWeight.bold,
+                            color: Colors.teal.shade800,
+                        ),
+                        SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: request['amount_received'].toDouble(),
+                          backgroundColor: Colors.teal.shade100,
+                          color: Colors.teal.shade700,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '${(request['amount_received'] * 100).toDouble()}% of the goal raised',
+                          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                        ),
+                      ],
+                      SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red.shade700),
+                          onPressed: () {
+                            _deleteRequest(donationRequests[index].id);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),
@@ -125,7 +137,7 @@ class DonorDonationRequestPage extends StatelessWidget {
 
   // Function to delete a donation request (to be implemented)
   void _deleteRequest(String id) {
-    // Handle the delete request logic here, such as removing it from the database.
+    FirebaseFirestore.instance.collection('donation_requests').doc(id).delete();
     print('Request with ID $id has been deleted');
   }
 }

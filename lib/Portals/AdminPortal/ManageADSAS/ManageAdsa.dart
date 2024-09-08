@@ -47,11 +47,9 @@ class _ADSAdataPageState extends State<ADSAdataPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
-
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(child: Text('No data available'));
           }
-
           // Getting documents from the 'Adsa' collection
           final List<QueryDocumentSnapshot> adsaDocs = snapshot.data!.docs;
 
@@ -73,7 +71,7 @@ class _ADSAdataPageState extends State<ADSAdataPage> {
                     return Center(child: CircularProgressIndicator());
                   }
 
-                  if (!subSnapshot.hasData || subSnapshot.data!.docs.isEmpty) {
+                  if (!subSnapshot.hasData) {
                     return Center(child: Text('No sub-documents available'));
                   }
 

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/ForgotPassword.dart';
-import 'package:upr_fund_collection/Portals/AdminPortal/AdminDashboardScreen.dart';
 import 'package:upr_fund_collection/Controllers/LoginController.dart';
 import 'package:upr_fund_collection/Controllers/PasswordControllers.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/IconButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DonorDashboard.dart';
-import 'package:upr_fund_collection/DonorSignup.dart';
+import 'package:upr_fund_collection/OutSiderSignUp.dart';
+import 'package:upr_fund_collection/StudentSignup.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -18,6 +17,61 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final LoginController loginController = Get.put(LoginController());
   final Password_controller _visibilityController=Get.put(Password_controller());
+
+  void SignUpPageSelector(){
+    Get.dialog(
+      AlertDialog(
+        title: Text(
+          'Choose Signup Type',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.teal.shade700,
+          ),
+        ),
+        content: Text(
+          'Please select the type of account you want to create:',
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal.shade700, // Background color
+              foregroundColor: Colors.white, // Text color
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Get.to(() => StudentSignUpPage());
+            },
+            child: Text('Student Signup'),
+          ),
+          SizedBox(width: 10), // Spacing between buttons
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+             backgroundColor: Colors.teal.shade700,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Get.to(() => OutsiderSignUpPage());
+            },
+            child: Text('Outsider Signup'),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      ),
+      barrierDismissible: true,
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
                     TextWidget(title: "Don't have an account? "),
                     GestureDetector(
                       onTap: () {
-                        Get.to(SignUpPage());
+                        SignUpPageSelector();
                       },
                       child: TextWidget(
                         title: 'Sign Up',
