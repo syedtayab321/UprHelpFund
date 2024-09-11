@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/MakeDonationPage.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/MakeDonationRequest.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/MakeDonationPage.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/MakeDonationRequest.dart';
 
 class DonorHomePage extends StatelessWidget {
   @override

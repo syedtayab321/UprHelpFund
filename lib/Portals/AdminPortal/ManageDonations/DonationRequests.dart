@@ -8,7 +8,10 @@ import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 import 'package:upr_fund_collection/DatabaseDataControllers/DonationRequestAddController.dart';
 
 class DonationRequest {
-  final String requesterName;
+  final String? requesterName;
+  final String requesterProfession;
+  final String? requesterSemester;
+  final String? requesterDepartment;
   final String needyPersonName;
   final double neededAmount;
   final String accountHolderName;
@@ -28,12 +31,18 @@ class DonationRequest {
     required this.reason,
     required this.requestDate,
     required this.status,
+    this.requesterDepartment,
+    required this.requesterProfession,
+    this.requesterSemester
   });
 
   factory DonationRequest.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return DonationRequest(
-      requesterName: data['request_by'] ?? '',
+      requesterName: data['request_person_name'] ?? '',
+      requesterProfession: data['request_person_profession'] ?? '',
+      requesterSemester: data['request_person_semester'] ?? '',
+      requesterDepartment: data['request_person_department'] ?? '',
       needyPersonName: data['needyPersonName'],
       neededAmount: data['needed_amount']?.toDouble() ?? 0.0,
       accountHolderName: data['account_holder_name'] ?? '',
@@ -144,7 +153,13 @@ class DonationRequestCard extends StatelessWidget {
             Divider(height: 10,),
             _buildInfoRow(Icons.account_balance_outlined, 'Bank Name: ', request.bankName),
             Divider(height: 10,),
-            _buildInfoRow(Icons.person_outline, 'Requested By: ', request.requesterName),
+            _buildInfoRow(Icons.person_outline, 'Requested Person Profession: ', request.requesterProfession),
+            Divider(height: 10,),
+            _buildInfoRow(Icons.person_outline, 'Requested Person name: ', request.requesterName!),
+            Divider(height: 10,),
+            _buildInfoRow(Icons.person_outline, 'Requested Person department: ', request.requesterSemester!),
+            Divider(height: 10,),
+            _buildInfoRow(Icons.person_outline, 'Requested Person semester: ', request.requesterSemester!),
             Divider(height: 10,),
             _buildInfoRow(Icons.monetization_on, 'Needed Amount: ', '\$${request.neededAmount.toStringAsFixed(2)}'),
             Divider(height: 10,),
@@ -160,7 +175,7 @@ class DonationRequestCard extends StatelessWidget {
                   color: Colors.white,
                   path: () async {
                     await FirebaseFirestore.instance.collection('donation_requests').
-                        doc(request.requesterName).collection('Persons').doc(request.needyPersonName).delete();
+                        doc(request.requesterProfession).collection('Persons').doc(request.needyPersonName).delete();
                   },
                   radius: 10,
                   padding: 3,
@@ -171,33 +186,23 @@ class DonationRequestCard extends StatelessWidget {
                 Elevated_button(
                   text: 'Approve',
                   color: Colors.white,
-                  path: () {
-                    Obx(() {
-                      return _controller.isloading.value
-                          ? CircularProgressIndicator()
-                          : Elevated_button(
-                        text: 'Submit',
-                        color: Colors.white,
-                        radius: 10,
-                        padding: 10,
-                        backcolor: Colors.teal,
-                        path: () async {
-                          await _controller.addDonationRequest(
-                            personName: request.needyPersonName,
-                            reason: request.reason,
-                            amountNeeded: request.neededAmount,
-                            accountNumber: request.accountNumber,
-                            accountHolderName: request.accountHolderName,
-                            request_by: request.requesterName,
-                            bank_name: request.bankName,
-                            status: 'Approved',
-                          ).then((value) {
-                            showSuccessSnackbar('Success Donation request added successfully!');
-                            _controller.isloading.value = false;
-                            Get.back();
-                          });
-                        },
-                      );
+                  path: ()async {
+                    await _controller.addDonationRequest(
+                      personName: request.needyPersonName,
+                      reason: request.reason,
+                      amountNeeded: request.neededAmount,
+                      accountNumber: request.accountNumber,
+                      accountHolderName: request.accountHolderName,
+                      requested_person_name: request.requesterName,
+                      requested_person_profession: request.requesterProfession,
+                      requested_person_semester: request.requesterSemester,
+                      requested_person_department: request.requesterDepartment,
+                      bank_name: request.bankName,
+                      status: 'Approved',
+                    ).then((value) {
+                      showSuccessSnackbar('Success Donation request added successfully!');
+                      _controller.isloading.value = false;
+                      Get.back();
                     });
                   },
                   radius: 10,

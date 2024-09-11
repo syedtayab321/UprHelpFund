@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DonorContactus.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DonorFeedback.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentContactus.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentFeedback.dart';
 
 class DonorProfilePage extends StatelessWidget {
   User? user = FirebaseAuth.instance.currentUser;
@@ -69,6 +69,16 @@ class DonorProfilePage extends StatelessWidget {
                           icon: Icons.person,
                           label: 'Role:',
                           value: userData['role'] ?? 'N/A',
+                        ),
+                        ProfileDetailRow(
+                          icon: Icons.person,
+                          label: 'Semester:',
+                          value: userData['semester'] ?? 'N/A',
+                        ),
+                        ProfileDetailRow(
+                          icon: Icons.account_balance_outlined,
+                          label: 'Department:',
+                          value: userData['department'] ?? 'N/A',
                         ),
                       ],
                     ),

@@ -12,20 +12,26 @@ class DonationRequestAddController extends GetxController {
     required double amountNeeded,
     required String accountNumber,
     required String accountHolderName,
-    required String request_by,
+    final String? requested_person_name,
+    required String requested_person_profession,
+    final String? requested_person_semester,
+    final String? requested_person_department,
     required String bank_name,
     required String status,
   }) async {
     isloading.value=true;
     try {
-      await _firestore.collection('donation_requests').doc(request_by).set({});
-      await _firestore.collection('donation_requests').doc(request_by).collection('Persons').doc(personName).set({
+      await _firestore.collection('donation_requests').doc(requested_person_profession).set({});
+      await _firestore.collection('donation_requests').doc(requested_person_profession).collection('Persons').doc(personName).set({
         'needyPersonName': personName,
         'reason': reason,
         'needed_amount': amountNeeded,
         'account_number': accountNumber,
         'account_holder_name': accountHolderName,
-        'request_by': request_by,
+        'request_person_name': requested_person_name,
+        'request_person_profession': requested_person_profession,
+        'request_person_semester': requested_person_semester,
+        'department': requested_person_department,
         'bank_name': bank_name,
         'amount_received': 0,
         'created_at': FieldValue.serverTimestamp(),
@@ -39,7 +45,7 @@ class DonationRequestAddController extends GetxController {
     }
   }
 
-  Future<void>DeleteDonationsData(String personName,String request_by)async{
-    await _firestore.collection('donation_requests').doc(request_by).collection('Persons').doc(personName).delete();
+  Future<void>DeleteDonationsData(String personName,String requested_person_profession)async{
+    await _firestore.collection('donation_requests').doc(requested_person_profession).collection('Persons').doc(personName).delete();
   }
 }

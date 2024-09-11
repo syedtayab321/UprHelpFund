@@ -7,6 +7,7 @@ import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 import 'package:upr_fund_collection/DatabaseDataControllers/ManagingCrDataController.dart';
 import 'package:upr_fund_collection/Models/CrModal.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/ManageCrs/AddCr.dart';
+import 'package:upr_fund_collection/Portals/AdminPortal/ManageCrs/UpdateCrForm.dart';
 
 class ClassReportersPage extends StatelessWidget {
   @override
@@ -145,7 +146,9 @@ class ClassReporterCard extends StatelessWidget {
                 Elevated_button(
                   text: 'Update',
                   color: Colors.white,
-                  path: () {},
+                  path: () {
+                    Get.to(CRUpdateForm(Department: reporter.department, Semester: reporter.semester));
+                  },
                   radius: 10,
                   padding: 3,
                   width: 80,

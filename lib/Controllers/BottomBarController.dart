@@ -8,11 +8,12 @@ import 'package:upr_fund_collection/Portals/AdminPortal/DashboardComponents/Admi
 import 'package:upr_fund_collection/Portals/AdminPortal/DashboardComponents/AdminHomePage.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/DashboardComponents/AdminMessage.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/DashboardComponents/AdminProfile.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DashboardComponents/DonorHomePage.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DashboardComponents/DonorNotificationPage.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DashboardComponents/DonorProfile.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DashboardComponents/ViewDonations.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DashboardComponents/ViewDonorDonationRequests.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/DashboardComponents/StudentHomePage.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/DashboardComponents/StudentNotificationPage.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/DashboardComponents/StudentProfile.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/DashboardComponents/ViewOwnPastDonations.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/DashboardComponents/ViewOwnDonationRequests.dart';
+
 
 class DonorBottomBarController extends GetxController {
   var selectedIndex = 0.obs;

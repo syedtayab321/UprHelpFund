@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
@@ -15,7 +17,7 @@ class DonorsMakeDonationRequest extends StatelessWidget {
   String? _accountHolderName;
   String? _requestBy;
   String? _bankName;
-
+  User? user=FirebaseAuth.instance.currentUser;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,14 +71,6 @@ class DonorsMakeDonationRequest extends StatelessWidget {
                     value == null || value.isEmpty ? 'Please enter the account holder name' : null,
                   ),
                   _buildDropdown(
-                    label: 'Request By',
-                    value: _requestBy,
-                    items: ['Student', 'OutSider'],
-                    onChanged: (value) => _requestBy = value,
-                    validator: (value) =>
-                    value == null || value.isEmpty ? 'Please select a request by' : null,
-                  ),
-                  _buildDropdown(
                     label: 'Bank Method',
                     value: _bankName,
                     items: ['Easypaisa', 'JazzCash', 'United Bank Limited', 'Mezan Bank', 'Alflah Bank', 'Askari Bank', 'National Bank', 'Sindh Bank', 'Allied Bank'],
@@ -90,7 +84,8 @@ class DonorsMakeDonationRequest extends StatelessWidget {
                     Elevated_button(
                         text: 'Submit', color: Colors.white, radius: 10,padding: 10,backcolor: Colors.teal,
                         path: ()async{
-                          // DocumentSnapshot<Map<String, dynamic>> Userdata=await FirebaseFirestore.instance.collection('Users').doc(user!.uid).get();
+                           DocumentSnapshot<Map<String, dynamic>> Userdata=await
+                           FirebaseFirestore.instance.collection('Users').doc(user!.uid).get();
                           if (_formKey.currentState?.validate() ?? false) {
                             await _controller.addDonationRequest(
                               personName: _personName!,
@@ -98,7 +93,10 @@ class DonorsMakeDonationRequest extends StatelessWidget {
                               amountNeeded: _amountNeeded!,
                               accountNumber: _accountNumber!,
                               accountHolderName: _accountHolderName!,
-                              request_by: _requestBy!,
+                              requested_person_name: Userdata['name'],
+                              requested_person_profession: Userdata['role'],
+                              requested_person_department: Userdata['department'],
+                              requested_person_semester: Userdata['semester'],
                               bank_name: _bankName!,
                               status:'Pending',
                             ).then((value){

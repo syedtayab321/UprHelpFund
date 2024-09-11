@@ -98,7 +98,7 @@ class AddDonationPage extends StatelessWidget {
                                amountNeeded: _amountNeeded!,
                                accountNumber: _accountNumber!,
                                accountHolderName: _accountHolderName!,
-                               request_by: 'Admin',
+                               requested_person_profession: 'Admin',
                                bank_name: _bankName!,
                                status:'Approved',
                              ).then((value){

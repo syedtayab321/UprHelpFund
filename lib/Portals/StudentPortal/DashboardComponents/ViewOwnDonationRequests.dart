@@ -1,10 +1,16 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 
 class DonorDonationRequestPage extends StatelessWidget {
-  // Function to get the stream for donation requests from sub-collections
+ User? user=FirebaseAuth.instance.currentUser;
+
   Stream<List<QueryDocumentSnapshot>> _getDonationRequestsStream() async* {
+    // getting current user data
+    DocumentSnapshot<Map<String, dynamic>> Userdata=await
+    FirebaseFirestore.instance.collection('Users').doc(user!.uid).get();
+
     final donationRequestsStream =
     FirebaseFirestore.instance.collection('donation_requests').snapshots();
 
@@ -12,7 +18,7 @@ class DonorDonationRequestPage extends StatelessWidget {
       List<QueryDocumentSnapshot> donationRequests = [];
 
       for (var doc in snapshot.docs) {
-        var subCollectionSnapshot = await doc.reference.collection('Persons').where('request_by',isEqualTo:'Student').get();
+        var subCollectionSnapshot = await doc.reference.collection('Persons').where('request_person_name',isEqualTo:Userdata['name']).get();
         donationRequests.addAll(subCollectionSnapshot.docs);
       }
 

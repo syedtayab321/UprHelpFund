@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:upr_fund_collection/Portals/ADSAPortal/AdsaDashboard.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/AdminDashboardScreen.dart';
 import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
-import 'package:upr_fund_collection/Portals/DonorPortal/DonorDashboard.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentDashboard.dart';
 import 'package:upr_fund_collection/Models/AuthenticationModel.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
 
@@ -29,16 +29,16 @@ class LoginController extends GetxController {
           if (userModel != null) {
             isLoading.value = false;
             if (userModel.role == 'Admin') {
-              Get.off(() => AdminDashboardPage(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
+              Get.offAll(() => AdminDashboardPage(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
               showSuccessSnackbar('Login Successfully');
             } else if (userModel.role == 'User') {
-              Get.off(() => Donordashboard(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
+              Get.offAll(() => Donordashboard(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
               showSuccessSnackbar('Login Successfully');
             }else if (userModel.role == 'ADSA') {
-              Get.off(() => ADSADashboardPage(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
+              Get.offAll(() => ADSADashboardPage(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
               showSuccessSnackbar('Login Successfully');
             }else if (userModel.role == 'CR') {
-              Get.off(() => Donordashboard(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
+              Get.offAll(() => Donordashboard(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
               showSuccessSnackbar('Login Successfully');
             }
           } else {
