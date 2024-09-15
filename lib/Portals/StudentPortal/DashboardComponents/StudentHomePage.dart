@@ -6,7 +6,7 @@ import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 import 'package:upr_fund_collection/Portals/StudentPortal/DonationRelatedPages/MakeDonationPage.dart';
 import 'package:upr_fund_collection/Portals/StudentPortal/DonationRelatedPages/MakeDonationRequest.dart';
 
-class DonorHomePage extends StatelessWidget {
+class StudentHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

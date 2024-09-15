@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/AdminDashboardScreen.dart';
 import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
-import 'package:upr_fund_collection/Portals/StudentPortal/StudentProfilePages/StudentDashboard.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentDashboard.dart';
 import 'package:upr_fund_collection/Login.dart';
 import 'package:upr_fund_collection/Models/AuthenticationModel.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
@@ -33,19 +33,19 @@ class _SplashScreenState extends State<SplashScreen> {
             Get.off(() => AdminDashboardPage(),
                 transition: Transition.fadeIn, duration: Duration(seconds: 2));
           });
-        } else if(userModel.role == 'User') {
+        } else if(userModel.role == 'Student') {
           Timer(Duration(seconds: 5), () {
-            Get.off(() => Donordashboard(),
+            Get.off(() => Studentdashboard(),
                 transition: Transition.fadeIn, duration: Duration(seconds: 2));
           });
         }else if(userModel.role == 'ADSA') {
           Timer(Duration(seconds: 5), () {
-            Get.off(() => Donordashboard(),
+            Get.off(() => Studentdashboard(),
                 transition: Transition.fadeIn, duration: Duration(seconds: 2));
           });
         }else if(userModel.role == 'CR') {
           Timer(Duration(seconds: 5), () {
-            Get.off(() => Donordashboard(),
+            Get.off(() => Studentdashboard(),
                 transition: Transition.fadeIn, duration: Duration(seconds: 2));
           });
         }

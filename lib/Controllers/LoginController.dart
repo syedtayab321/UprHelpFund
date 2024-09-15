@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:upr_fund_collection/Portals/ADSAPortal/AdsaDashboard.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/AdminDashboardScreen.dart';
 import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
-import 'package:upr_fund_collection/Portals/StudentPortal/StudentProfilePages/StudentDashboard.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentDashboard.dart';
 import 'package:upr_fund_collection/Models/AuthenticationModel.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
 
@@ -32,13 +32,13 @@ class LoginController extends GetxController {
               Get.offAll(() => AdminDashboardPage(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
               showSuccessSnackbar('Login Successfully');
             } else if (userModel.role == 'Student') {
-              Get.offAll(() => Donordashboard(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
+              Get.offAll(() => Studentdashboard(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
               showSuccessSnackbar('Login Successfully');
             }else if (userModel.role == 'ADSA') {
               Get.offAll(() => ADSADashboardPage(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
               showSuccessSnackbar('Login Successfully');
             }else if (userModel.role == 'CR') {
-              Get.offAll(() => Donordashboard(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
+              Get.offAll(() => Studentdashboard(), transition: Transition.fadeIn, duration: Duration(seconds: 2));
               showSuccessSnackbar('Login Successfully');
             }
           } else {

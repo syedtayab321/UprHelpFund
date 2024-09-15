@@ -8,7 +8,7 @@ import 'package:upr_fund_collection/CustomWidgets/IconButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
 
-class Donordashboard extends StatelessWidget {
+class Studentdashboard extends StatelessWidget {
   final DonorBottomBarController _controller = Get.put(DonorBottomBarController());
   final AuthService _authService = AuthService();
 

@@ -23,7 +23,7 @@ class DonorBottomBarController extends GetxController {
   }
 
   final List<Widget> pages = [
-        DonorHomePage(),
+        StudentHomePage(),
         DonorOwnDonationsPage(),
         DonorDonationRequestPage(),
         DonorNotificationsPage(),
