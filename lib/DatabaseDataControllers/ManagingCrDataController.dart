@@ -17,7 +17,7 @@ class ManagingCrDataController extends GetxController {
       await _firestore.collection('classReporters').doc(cleanDepartment).collection('crs').doc(cleanSemester).set({
         'cr_name': CrName,
         'department': cleanDepartment,
-        'roll_no': rollno,
+        'roll_no': rollno.toString(),
         'session': cleanSession,
         'semester': cleanSemester,
       });

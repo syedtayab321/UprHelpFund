@@ -57,7 +57,7 @@ class _StudentSignUpPageState extends State<StudentSignUpPage> {
           _firestore.collection('Users').doc(user.uid).set({
             'name': _nameController.text,
             'email': _emailController.text.trim(),
-            'role': 'User',
+            'role': 'Student',
             'uid': user.uid,
             'semester': _selectedSemester,
             'department': _selectedDepartment,

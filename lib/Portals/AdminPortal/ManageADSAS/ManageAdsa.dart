@@ -109,18 +109,6 @@ class _ADSAdataPageState extends State<ADSAdataPage> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Elevated_button(
-                                    text: 'Update',
-                                    color: Colors.white,
-                                    path: () {
-                                      // Implement update functionality
-                                    },
-                                    radius: 10,
-                                    padding: 3,
-                                    width: 80,
-                                    height: 40,
-                                    backcolor: Colors.teal.shade700,
-                                  ),
-                                  Elevated_button(
                                     text: 'Delete',
                                     color: Colors.white,
                                     path: () async{

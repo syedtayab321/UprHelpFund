@@ -2,9 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
-import 'package:upr_fund_collection/Portals/StudentPortal/StudentContactus.dart';
-import 'package:upr_fund_collection/Portals/StudentPortal/StudentFeedback.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentProfilePages/StudentContactus.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentProfilePages/StudentFeedback.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentProfilePages/StudentProfileUpdate.dart';
 
 class DonorProfilePage extends StatelessWidget {
   User? user = FirebaseAuth.instance.currentUser;
@@ -34,9 +36,10 @@ class DonorProfilePage extends StatelessWidget {
                   SizedBox(height: 20),
                   CircleAvatar(
                     radius: 60,
+                    backgroundColor: Colors.transparent,
                     backgroundImage: userData['profileImage'] != null
                         ? NetworkImage(userData['profileImage'])
-                        : AssetImage('assets/images/logo.png') as ImageProvider,
+                        : AssetImage('assets/images/app-icon-person.png') as ImageProvider,
                   ),
                   SizedBox(height: 20),
                   Text(
@@ -80,6 +83,24 @@ class DonorProfilePage extends StatelessWidget {
                           label: 'Department:',
                           value: userData['department'] ?? 'N/A',
                         ),
+                        Elevated_button(
+                            text:'Edit',
+                            color: Colors.white,
+                            backcolor: Colors.teal,
+                            padding: 10,
+                            radius: 10,
+                            height: 10,
+                            width: 170,
+                            path: (){
+                              Get.to(
+                                  UpdateStudentPage(
+                                    name: userData['name'],
+                                    department: userData['department'],
+                                    semester: userData['semester'],
+                                  ),
+                              );
+                            }
+                        ),
                       ],
                     ),
                   ),
@@ -98,14 +119,6 @@ class DonorProfilePage extends StatelessWidget {
   Widget _buildActionListTiles(BuildContext context) {
     return Column(
       children: [
-        ListTile(
-          leading: Icon(Icons.edit, color: Colors.teal),
-          title: Text('Update Profile'),
-          onTap: () {
-            Get.toNamed('/update-profile');
-          },
-        ),
-        Divider(),
         ListTile(
           leading: Icon(Icons.feedback, color: Colors.teal),
           title: Text('Give Feedback'),

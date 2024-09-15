@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/AdminDashboardScreen.dart';
 import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
-import 'package:upr_fund_collection/Portals/StudentPortal/StudentDashboard.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/StudentProfilePages/StudentDashboard.dart';
 import 'package:upr_fund_collection/Login.dart';
 import 'package:upr_fund_collection/Models/AuthenticationModel.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';

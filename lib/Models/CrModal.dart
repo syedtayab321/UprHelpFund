@@ -1,7 +1,7 @@
 class ClassReporter {
   final String profilePhoto;
   final String name;
-  final int rollNumber;
+  final String rollNumber;
   final String department;
   final String semester;
   final String session;

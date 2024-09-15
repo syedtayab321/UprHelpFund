@@ -5,6 +5,7 @@ import 'package:upr_fund_collection/Portals/AdminPortal/ManageADSAS/ManageAdsa.d
 import 'package:upr_fund_collection/Portals/AdminPortal/ManageCrs/ManageCrs.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/ManageDonations/DonationRequests.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/ManageDonations/ManageDonations.dart';
+import 'package:upr_fund_collection/Portals/AdminPortal/ManageFeedback/FeedbackPage.dart';
 
 class AdminHomePage extends StatelessWidget {
   @override
@@ -53,6 +54,14 @@ class AdminHomePage extends StatelessWidget {
                       colors: [Colors.brown, Colors.blueAccent],
                       onTap: () {
                         Get.to(ADSAdataPage());
+                      }
+                  ),
+                  CustomGridCard(
+                      icon: Icons.feedback,
+                      title: 'Manage Feedbacks',
+                      colors: [Colors.teal, Colors.brown],
+                      onTap: () {
+                        Get.to(FeedbackPage());
                       }
                   ),
                 ],

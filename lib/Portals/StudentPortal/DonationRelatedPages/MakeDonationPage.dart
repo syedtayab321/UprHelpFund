@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
+import 'package:upr_fund_collection/Portals/StudentPortal/PaymentRelatedPages/PaymentMethodSelector.dart';
 
 class MakeDonationPage extends StatelessWidget {
   @override
@@ -12,8 +13,8 @@ class MakeDonationPage extends StatelessWidget {
     final requestData = Get.arguments as Map<String, dynamic>;
 
     // Extract the data from the passed arguments
-    final requestId = requestData['requestId'] ?? 'N/A';
-    final requestedBy = requestData['request_by'] ?? 'N/A';
+    final requestedBy = requestData['request_person_name'] ?? 'N/A';
+    final requestedPersonProfession = requestData['request_person_profession'] ?? 'N/A';
     final needyName = requestData['needyPersonName'] ?? 'N/A';
     final DonatedAmount= requestData['amount_received'] ?? 'N/A';
     final reason = requestData['reason'] ?? 'N/A';
@@ -58,6 +59,12 @@ class MakeDonationPage extends StatelessWidget {
                     ),
                   SizedBox(height: 16),
                   TextWidget(
+                    title: 'Profession: $requestedPersonProfession',
+                    size: 20,
+                    color: Colors.teal.shade900,
+                  ),
+                  SizedBox(height: 16),
+                  TextWidget(
                     title: 'Needy Person:',
                     size: 18,
                      weight: FontWeight.bold,
@@ -98,7 +105,7 @@ class MakeDonationPage extends StatelessWidget {
             Center(
               child: Elevated_button(
                 path: () {
-                  // Handle donate button logic
+                 Get.to(PaymentMethodSelector());
                 },
                 color: Colors.white,
                 backcolor: Colors.teal.shade700,
