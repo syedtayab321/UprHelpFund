@@ -1,30 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:upr_fund_collection/Models/AdminMessageModal.dart';
 import 'package:upr_fund_collection/Portals/AdminPortal/DashboardComponents/AdminConversationPage.dart';
 
 class AdminMessagesPage extends StatelessWidget {
-  // Sample list of messages
-  final List<AdminMessage> messages = [
-    AdminMessage(
-      userName: 'John Doe',
-      messageContent: 'Hello, I need some help with my order.',
-      timestamp: DateTime.now().subtract(Duration(minutes: 5)),
-    ),
-    AdminMessage(
-      userName: 'Jane Smith',
-      messageContent: 'When will my package arrive?',
-      timestamp: DateTime.now().subtract(Duration(hours: 1)),
-    ),
-    AdminMessage(
-      userName: 'Alice Brown',
-      messageContent: 'I am interested in your services.',
-      timestamp: DateTime.now().subtract(Duration(days: 1)),
-    ),
-    // Add more messages here
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,69 +16,68 @@ class AdminMessagesPage extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: ListView.builder(
-          padding: EdgeInsets.all(16),
-          itemCount: messages.length,
-          itemBuilder: (context, index) {
-            final message = messages[index];
-            return InkWell(
-              onTap: (){
-                Get.to(AdminConversationPage());
-              },
-              child: Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                margin: EdgeInsets.symmetric(vertical: 10),
-                child: ListTile(
-                  contentPadding: EdgeInsets.all(16),
-                  tileColor: Colors.white,
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.teal.shade700,
-                    child: TextWidget(
-                     title:  message.userName[0], // Initials of the username
-                      color: Colors.white, size: 20
+        child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('Chats').snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            // Get the list of document IDs
+            final List<DocumentSnapshot> chatDocuments = snapshot.data!.docs;
+
+            return ListView.builder(
+              padding: EdgeInsets.all(16),
+              itemCount: chatDocuments.length,
+              itemBuilder: (context, index) {
+                // Get the document ID, which is the user's UID
+                final String userId = chatDocuments[index].id;
+                final Map<String, dynamic> data = chatDocuments[index].data() as Map<String, dynamic>;
+                final String userName = data['SenderName'] ?? 'Default User';
+                final String userProfession = data['SenderProfession'] ?? 'Default User';
+                return InkWell(
+                  onTap: () {
+                    Get.to(AdminConversationPage(userId: userId,UserName: userName,));
+                  },
+                  child: Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
                     ),
-                  ),
-                  title: TextWidget(
-                   title:  message.userName,
-                    weight: FontWeight.bold,
-                      size: 18,
-                      color: Colors.teal.shade700,
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: TextWidget(
-                     title:  message.messageContent,
-                      size: 16, color: Colors.black87
-                    ),
-                  ),
-                  trailing: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.all(16),
+                      tileColor: Colors.white,
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.teal.shade700,
+                        child: TextWidget(
+                          title: userId[0], // Initials of the user ID
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      title: TextWidget(
+                        title: userName,
+                        weight: FontWeight.bold,
+                        size: 18,
+                        color: Colors.teal.shade700,
+                      ),
+                      subtitle:TextWidget(
+                        title: userProfession,
+
+                      ) ,
+                      trailing: Icon(
                         Icons.message_outlined,
                         color: Colors.teal.shade700,
                       ),
-                      SizedBox(height: 5),
-                      Text(
-                        _formatTimestamp(message.timestamp),
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             );
           },
         ),
       ),
     );
-  }
-
-  String _formatTimestamp(DateTime timestamp) {
-    return '${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute}';
   }
 }

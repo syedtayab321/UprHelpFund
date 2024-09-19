@@ -1,75 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:upr_fund_collection/Controllers/AdsaMainController.dart';
 
-class AdsaHomePage extends StatelessWidget {
+class AdsaHomePage extends StatefulWidget {
+  @override
+  State<AdsaHomePage> createState() => _AdsaHomePageState();
+}
+
+class _AdsaHomePageState extends State<AdsaHomePage> {
+  final AdsaDonationController donationController = Get.put(AdsaDonationController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('ADSA Dashboard'),
-        backgroundColor: Colors.teal.shade700,
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16.0,
-          mainAxisSpacing: 16.0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Menu options
-            _buildMenuOption(
-              context: context,
-              icon: Icons.view_agenda,
-              label: 'Manage Views',
-              onTap: () {
-                // Navigate to Manage Views page
-              },
-            ),
-            _buildMenuOption(
-              context: context,
-              icon: Icons.person,
-              label: 'User Management',
-              onTap: () {
-                // Navigate to User Management page
-              },
-            ),
-            _buildMenuOption(
-              context: context,
-              icon: Icons.notifications,
-              label: 'Notifications',
-              onTap: () {
-                // Navigate to Notifications page
-              },
-            ),
-            _buildMenuOption(
-              context: context,
-              icon: Icons.analytics,
-              label: 'Reports',
-              onTap: () {
-                // Navigate to Reports page
-              },
-            ),
-            _buildMenuOption(
-              context: context,
-              icon: Icons.settings,
-              label: 'Settings',
-              onTap: () {
-                // Navigate to Settings page
-              },
-            ),
-            _buildMenuOption(
-              context: context,
-              icon: Icons.help,
-              label: 'Support',
-              onTap: () {
-                // Navigate to Support page
-              },
+            // GridView of options
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.0,
+                mainAxisSpacing: 16.0,
+                children: [
+                  _buildMenuOption(
+                    context: context,
+                    icon: Icons.view_agenda,
+                    label: 'View Donations',
+                    onTap: () {
+                      // Navigate to Manage Views page
+                    },
+                  ),
+                  _buildMenuOption(
+                    context: context,
+                    icon: Icons.person,
+                    label: 'View Donation Requests',
+                    onTap: () {
+                      // Navigate to User Management page
+                    },
+                  ),
+                  _buildMenuOption(
+                    context: context,
+                    icon: Icons.notifications,
+                    label: 'Notifications',
+                    onTap: () {
+                      // Navigate to Notifications page
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
   Widget _buildMenuOption({
     required BuildContext context,
     required IconData icon,
@@ -83,7 +70,8 @@ class AdsaHomePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.0),
         ),
         elevation: 4.0,
-        shadowColor: Colors.teal.withOpacity(0.3),
+        color: Colors.blueAccent,
+        shadowColor: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -92,7 +80,7 @@ class AdsaHomePage extends StatelessWidget {
               Icon(
                 icon,
                 size: 50,
-                color: Colors.teal.shade600,
+                color: Colors.white,
               ),
               SizedBox(height: 16.0),
               Text(
@@ -101,7 +89,7 @@ class AdsaHomePage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.teal.shade800,
+                  color: Colors.white,
                 ),
               ),
             ],

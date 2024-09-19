@@ -127,6 +127,18 @@ class _ADSAdataPageState extends State<ADSAdataPage> {
                                     backcolor: Colors.red.shade600,
                                   ),
                                   Elevated_button(
+                                    text: 'Message',
+                                    color: Colors.white,
+                                    path: () {
+                                      // Implement view donations functionality
+                                    },
+                                    radius: 10,
+                                    padding: 3,
+                                    width: 100,
+                                    height: 40,
+                                    backcolor: Colors.teal.shade900,
+                                  ),
+                                  Elevated_button(
                                     text: 'View Donations',
                                     color: Colors.white,
                                     path: () {

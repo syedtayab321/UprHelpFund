@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class DonorFeedbackPage extends StatefulWidget {
   @override
@@ -16,26 +14,32 @@ class _DonorFeedbackPageState extends State<DonorFeedbackPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _feedbackController = TextEditingController();
   double _rating = 3.0;
-  User? user=FirebaseAuth.instance.currentUser;
-  void _submitFeedback() async{
-    DocumentSnapshot<Map<String,dynamic>> Userdata=await FirebaseFirestore.instance.collection('Users').doc(user!.uid).get();
-    if (_formKey.currentState!.validate()) {
-        final Uri params = Uri(
-          scheme: 'mailto',
-          path: 'syedhussain4508@example.com',
-          query: 'subject=User Update Request&body=Name: ${Userdata['name']}\nSemester: ${Userdata['semester']}\nDepartment: ${Userdata['department']}',
-        );
+  User? user = FirebaseAuth.instance.currentUser;
 
-        var url = params;
-        if (await canLaunchUrl(url)) {
-          await launchUrlString(url.toString());
-        } else {
-          showErrorSnackbar('Could not send Email');
-        }
-      _feedbackController.clear();
-      setState(() {
-        _rating = 3.0;
-      });
+  void _submitFeedback() async {
+    if (_formKey.currentState!.validate()) {
+      DocumentSnapshot<Map<String,dynamic>> UserData = await FirebaseFirestore.instance.collection('Users').doc(user!.uid).get();
+      try {
+        // Save feedback to Firestore
+        await FirebaseFirestore.instance.collection('Feedback').add({
+          'userId': user!.uid,
+          'UserName':UserData['name'],
+          'Profession':UserData['role'],
+          'feedback': _feedbackController.text,
+          'rating': _rating,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+        showSuccessSnackbar('Feedback submitted successfully');
+
+        // Clear the form
+        _feedbackController.clear();
+        setState(() {
+          _rating = 3.0;
+        });
+      } catch (e) {
+        showErrorSnackbar('Failed to submit feedback: $e');
+      }
     }
   }
 
@@ -43,7 +47,7 @@ class _DonorFeedbackPageState extends State<DonorFeedbackPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: TextWidget(title: 'Give Feedback',color:Colors.white),
+        title: TextWidget(title: 'Give Feedback', color: Colors.white),
         backgroundColor: Colors.teal.shade700,
       ),
       body: Center(

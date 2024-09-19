@@ -131,7 +131,7 @@ class DonorProfilePage extends StatelessWidget {
           leading: Icon(Icons.contact_mail, color: Colors.teal),
           title: Text('Contact Us'),
           onTap: () {
-            Get.to(DonorContactUsPage());
+            Get.to(StudentChatPage());
           },
         ),
       ],

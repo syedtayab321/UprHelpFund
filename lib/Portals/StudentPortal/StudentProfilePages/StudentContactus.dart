@@ -1,59 +1,40 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class DonorContactUsPage extends StatefulWidget {
+class StudentChatPage extends StatefulWidget {
   @override
-  _DonorContactUsPageState createState() => _DonorContactUsPageState();
+  _StudentChatPageState createState() => _StudentChatPageState();
 }
 
-class _DonorContactUsPageState extends State<DonorContactUsPage> {
+class _StudentChatPageState extends State<StudentChatPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
+  User? user = FirebaseAuth.instance.currentUser;
 
-  Future<void> _sendEmail({
-    required String name,
-    required String email,
-    required String subject,
-    required String message,
-  }) async {
-    final Uri params = Uri(
-      scheme: 'mailto',
-      path: 'admin@example.com', // Replace with admin's email
-      query: 'subject=$subject&body=Name: $name\nEmail: $email\n\n$message',
-    );
-
-    final url = params.toString();
-
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open the email client.')),
-      );
-    }
-  }
-
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      _sendEmail(
-        name: _nameController.text,
-        email: _emailController.text,
-        subject: _subjectController.text,
-        message: _messageController.text,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Message sent successfully!')),
-      );
-
-      _nameController.clear();
-      _emailController.clear();
-      _subjectController.clear();
+  void _sendMessage() async {
+    DocumentSnapshot<Map<String,dynamic>> UserData = await FirebaseFirestore.instance.collection('Users').doc(user!.uid).get();
+    if (_messageController.text.trim().isNotEmpty) {
+      await FirebaseFirestore.instance
+          .collection('Chats')
+          .doc(user!.uid).set({
+        'SenderName':UserData['name'],
+        'SenderProfession':UserData['role'],
+      });
+      await FirebaseFirestore.instance
+          .collection('Chats')
+          .doc(user!.uid)
+          .collection('Messages')
+          .add({
+        'message': _messageController.text.trim(),
+        'sender': user!.uid,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
       _messageController.clear();
+    } else {
+      showErrorSnackbar('Please type a message');
     }
   }
 
@@ -61,93 +42,119 @@ class _DonorContactUsPageState extends State<DonorContactUsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: TextWidget(title: 'Contact Us',color: Colors.white,),
+        title: TextWidget(title: 'Chat', color: Colors.white),
         backgroundColor: Colors.teal.shade700,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Your Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Your Email',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                    return 'Please enter a valid email address';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _subjectController,
-                decoration: InputDecoration(
-                  labelText: 'Subject',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a subject';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  labelText: 'Message',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 5,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your message';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 32),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _submitForm,
-                  child: Text('Send Message'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+      body: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('Chats')
+                  .doc(user!.uid)
+                  .collection('Messages')
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                var messages = snapshot.data!.docs;
+
+                return ListView.builder(
+                  reverse: true,
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    var messageData = messages[index].data() as Map<String, dynamic>;
+                    var isSender = messageData['sender'] == user!.uid;
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      child: Align(
+                        alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Container(
+                          padding: EdgeInsets.all(14.0),
+                          decoration: BoxDecoration(
+                            color: isSender ? Colors.teal.shade300 : Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(isSender ? 12 : 0),
+                              topRight: Radius.circular(isSender ? 0 : 12),
+                              bottomLeft: Radius.circular(12),
+                              bottomRight: Radius.circular(12),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 5.0,
+                                spreadRadius: 1.0,
+                              )
+                            ],
+                          ),
+                          child: Text(
+                            messageData['message'],
+                            style: TextStyle(
+                              color: isSender ? Colors.white : Colors.black87,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextFormField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Type your message...',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a message';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(width: 8),
+                CircleAvatar(
+                  backgroundColor: Colors.teal,
+                  radius: 24,
+                  child: IconButton(
+                    icon: Icon(Icons.send, color: Colors.white),
+                    onPressed: _sendMessage,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
+
