@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:upr_fund_collection/Controllers/CrMainController.dart';
 import 'package:upr_fund_collection/CustomWidgets/ConfirmDialogBox.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
-import 'package:upr_fund_collection/Portals/CrPortal/CrViewDonationPages.dart';
+import 'package:upr_fund_collection/Portals/CrPortal/CrPayment.dart';
+import 'package:upr_fund_collection/Portals/CrPortal/CrViewDonations.dart';
 
 class CrHomePage extends StatefulWidget {
   @override
@@ -12,15 +13,8 @@ class CrHomePage extends StatefulWidget {
 }
 
 class _CrHomePageState extends State<CrHomePage> {
-  final TextEditingController _searchController = TextEditingController();
-  String searchQuery = "";
   final AuthService _authService = AuthService();
-  // Search function to filter departments
-  void _searchDepartments(String query) {
-    setState(() {
-      searchQuery = query.toLowerCase();
-    });
-  }
+  final CrMainDonationController controller = Get.put(CrMainDonationController());
 
   void logout(BuildContext context) async {
     await Get.dialog(
@@ -38,107 +32,122 @@ class _CrHomePageState extends State<CrHomePage> {
       ),
     );
   }
+
+  final List<Map<String, dynamic>> donationRequests = [
+    {
+      'name': 'John Doe',
+      'title': 'Help for Education',
+      'amount': 500,
+    },
+    {
+      'name': 'Jane Smith',
+      'title': 'Medical Support',
+      'amount': 1000,
+    },
+    // Add more donation requests here
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: TextWidget(title: 'Cr Home Page',color:Colors.white),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: Colors.white),
-            onPressed: (){
-              logout(context);
-            },
-          ),
-        ],
-        backgroundColor: Colors.teal.shade700,
-        elevation: 4,
+        title: TextWidget(title: 'CR Home Page',color: Colors.white,),
+        backgroundColor: Colors.teal.shade800,
       ),
-      body: Column(
-        children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _searchDepartments,
-              decoration: InputDecoration(
-                labelText: "Search Department",
-                prefixIcon: Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.grey[200],
-                border: OutlineInputBorder(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Management Section
+            GestureDetector(
+              onTap: () {
+                Get.to(() => CrViewDonationPage());
+              },
+              child: Container(
+                margin: EdgeInsets.only(bottom: 20),
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  border: Border.all(color: Colors.teal, width: 2),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(Icons.manage_accounts, color: Colors.teal.shade800),
+                    TextWidget(
+                      title: 'Manage Donations',
+                      size: 18,
+                        color: Colors.teal,
+                        weight: FontWeight.bold,
+                    ),
+                    Icon(Icons.arrow_forward_ios, color: Colors.teal.shade800),
+                  ],
                 ),
               ),
             ),
-          ),
 
-          // StreamBuilder for real-time updates
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('Donations').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-
-                // Filtering based on search query
-                final departments = snapshot.data!.docs.where((doc) {
-                  final departmentName = doc.id.toLowerCase();
-                  return departmentName.contains(searchQuery);
-                }).toList();
-
-                if (departments.isEmpty) {
-                  return Center(child: Text('No departments found'));
-                }
-
-                return ListView.builder(
-                  itemCount: departments.length,
-                  itemBuilder: (context, index) {
-                    String departmentName = departments[index].id;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 16),
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        color: Colors.teal.shade700,
-                        elevation: 6,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.blueAccent,
-                              child: Icon(Icons.business, color: Colors.white),
+            // Donation Requests List
+            Expanded(
+              child: ListView.builder(
+                itemCount: donationRequests.length,
+                itemBuilder: (context, index) {
+                  final donation = donationRequests[index];
+                  return Card(
+                    elevation: 5,
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextWidget(
+                           title:donation['title'],
+                            size: 18,
+                             weight: FontWeight.bold,
                             ),
-                            title: TextWidget(
-                             title:  departmentName,
-                              size: 24,
-                                  color: Colors.white
-                            ),
-                            trailing: Icon(Icons.arrow_forward_ios,
-                                color: Colors.white
-                            ),
-                            onTap: () {
-                              Get.to(CrViewDonationPage());
-                            },
+                          SizedBox(height: 10),
+                          TextWidget(
+                           title:  'Name: ${donation['name']}',
+                            size: 16),
+                          SizedBox(height: 10),
+                          TextWidget(
+                           title:  'Donation Amount: \$${donation['amount']}',
+                            size: 16, color: Colors.green,
                           ),
-                        ),
+                          SizedBox(height: 20),
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: GestureDetector(
+                              onTap: () {
+                                Get.to(() => PaymentPage());
+                              },
+                              child: Container(
+                                padding: EdgeInsets.only(left: 40,right: 40,top: 10,bottom: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.teal.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: Colors.teal.shade800, width: 2),
+                                ),
+                                child: TextWidget(
+                                 title:  'Donate',
+                                 color: Colors.teal.shade800),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                );
-              },
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

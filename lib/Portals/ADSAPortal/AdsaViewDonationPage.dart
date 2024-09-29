@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:upr_fund_collection/Controllers/CrMainPageControllers.dart';
+import 'package:upr_fund_collection/Controllers/AdsaMainPageControllers.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 
-class CrViewDonationPage extends StatelessWidget {
-  final CrDonationController controller = Get.put(CrDonationController());
+class AdsaViewDonationPage extends StatelessWidget {
+  final AdsaDonationController controller = Get.put(AdsaDonationController());
 
   @override
   Widget build(BuildContext context) {
@@ -12,8 +12,8 @@ class CrViewDonationPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.teal.shade700,
         title: TextWidget(title: 'Donations by Semester',
-           weight: FontWeight.bold,
-        color: Colors.white,
+          weight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
       body: Column(
@@ -65,8 +65,8 @@ class CrViewDonationPage extends StatelessWidget {
                       leading: CircleAvatar(
                         backgroundColor: Colors.blueAccent,
                         child: TextWidget(
-                         title:  donation.name[0].toUpperCase(),
-                         color: Colors.white, weight: FontWeight.bold,
+                          title:  donation.name[0].toUpperCase(),
+                          color: Colors.white, weight: FontWeight.bold,
                         ),
                       ),
                       title: TextWidget(
@@ -80,8 +80,8 @@ class CrViewDonationPage extends StatelessWidget {
                           TextWidget(title: 'Roll No: ${donation.rollNo}', size: 14),
                           TextWidget(title: 'Semester: ${donation.semester}', size: 14),
                           TextWidget(
-                          title:   'Amount: \$${donation.donatedAmount}',
-                            size: 16, weight: FontWeight.w600, color: Colors.green),
+                              title:   'Amount: \$${donation.donatedAmount}',
+                              size: 16, weight: FontWeight.w600, color: Colors.green),
                         ],
                       ),
                     ),
