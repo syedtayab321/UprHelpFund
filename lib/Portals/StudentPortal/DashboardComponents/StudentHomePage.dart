@@ -97,24 +97,22 @@ class SubCollectionDonationRequests extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('donation_requests')
-          .doc(mainDocId) // Access the main document by ID
-          .collection('Persons') // Sub-collection
-          .where('status', isEqualTo: 'Approved') // Only fetch 'Approved' requests
+          .doc(mainDocId)
+          .collection('Persons')
+          .where('status', isEqualTo: 'Approved')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
-
         var subRequests = snapshot.data!.docs;
-
         return Column(
           children: subRequests.map((doc) {
             var requestData = doc.data() as Map<String, dynamic>;
             return DonationRequestTile(
               needyPersonName: requestData['needyPersonName'] ?? 'Unknown',
               reason: requestData['reason'] ?? 'No reason provided',
-              requestedDate: requestData['created_at'], // Keep as Timestamp
+              requestedDate: requestData['created_at'],
               requestData: requestData,
             );
           }).toList(),
@@ -127,7 +125,7 @@ class SubCollectionDonationRequests extends StatelessWidget {
 class DonationRequestTile extends StatelessWidget {
   final String needyPersonName;
   final String reason;
-  final Timestamp requestedDate; // Now it's a Timestamp
+  final Timestamp requestedDate;
   final Map<String, dynamic> requestData;
 
   const DonationRequestTile({

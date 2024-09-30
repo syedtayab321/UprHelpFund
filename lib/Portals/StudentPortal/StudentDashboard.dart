@@ -63,7 +63,6 @@ class Studentdashboard extends StatelessWidget {
             TabItem(icon: Icons.home, title: 'Home'),
             TabItem(icon: Icons.content_paste_go_outlined, title: 'Donotions'),
             TabItem(icon: Icons.request_page, title: 'Requests'),
-            TabItem(icon: Icons.notifications, title: 'Notification'),
             TabItem(icon: Icons.person, title: 'Profile'),
           ],
           initialActiveIndex: _controller.selectedIndex.value,

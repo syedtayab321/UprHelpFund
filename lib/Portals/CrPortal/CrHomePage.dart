@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:upr_fund_collection/Controllers/CrMainController.dart';
 import 'package:upr_fund_collection/CustomWidgets/ConfirmDialogBox.dart';
+import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
-import 'package:upr_fund_collection/Portals/CrPortal/CrPayment.dart';
+import 'package:upr_fund_collection/PaymentRelated/CrPayment.dart';
 import 'package:upr_fund_collection/Portals/CrPortal/CrViewDonations.dart';
 
 class CrHomePage extends StatefulWidget {
@@ -33,26 +36,26 @@ class _CrHomePageState extends State<CrHomePage> {
     );
   }
 
-  final List<Map<String, dynamic>> donationRequests = [
-    {
-      'name': 'John Doe',
-      'title': 'Help for Education',
-      'amount': 500,
-    },
-    {
-      'name': 'Jane Smith',
-      'title': 'Medical Support',
-      'amount': 1000,
-    },
-    // Add more donation requests here
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: TextWidget(title: 'CR Home Page',color: Colors.white,),
+        title: TextWidget(title: 'CR Home Page', color: Colors.white),
         backgroundColor: Colors.teal.shade800,
+        actions: [
+          Elevated_button(
+            text: 'Logout',
+            color: Colors.white,
+            path: () {
+              logout(context);
+            },
+            radius: 10,
+            padding: 3,
+            width: 130,
+            height: 40,
+            backcolor: Colors.red.shade800,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -78,72 +81,138 @@ class _CrHomePageState extends State<CrHomePage> {
                     TextWidget(
                       title: 'Manage Donations',
                       size: 18,
-                        color: Colors.teal,
-                        weight: FontWeight.bold,
+                      color: Colors.teal,
+                      weight: FontWeight.bold,
                     ),
                     Icon(Icons.arrow_forward_ios, color: Colors.teal.shade800),
                   ],
                 ),
               ),
             ),
-
-            // Donation Requests List
             Expanded(
-              child: ListView.builder(
-                itemCount: donationRequests.length,
-                itemBuilder: (context, index) {
-                  final donation = donationRequests[index];
-                  return Card(
-                    elevation: 5,
-                    margin: EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextWidget(
-                           title:donation['title'],
-                            size: 18,
-                             weight: FontWeight.bold,
-                            ),
-                          SizedBox(height: 10),
-                          TextWidget(
-                           title:  'Name: ${donation['name']}',
-                            size: 16),
-                          SizedBox(height: 10),
-                          TextWidget(
-                           title:  'Donation Amount: \$${donation['amount']}',
-                            size: 16, color: Colors.green,
-                          ),
-                          SizedBox(height: 20),
-                          Align(
-                            alignment: Alignment.bottomRight,
-                            child: GestureDetector(
-                              onTap: () {
-                                Get.to(() => PaymentPage());
-                              },
-                              child: Container(
-                                padding: EdgeInsets.only(left: 40,right: 40,top: 10,bottom: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.teal.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                      color: Colors.teal.shade800, width: 2),
-                                ),
-                                child: TextWidget(
-                                 title:  'Donate',
-                                 color: Colors.teal.shade800),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('donation_requests').snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(child: Text('No donation requests available.'));
+                  }
+                  var mainDocs = snapshot.data!.docs;
+                  return ListView.builder(
+                    itemCount: mainDocs.length,
+                    itemBuilder: (context, index) {
+                      var mainDoc = mainDocs[index];
+                      return StreamBuilder<QuerySnapshot>(
+                        stream:  FirebaseFirestore.instance
+                            .collection('donation_requests')
+                            .doc(mainDoc.id)
+                            .collection('Persons')
+                            .where('status', isEqualTo: 'Approved')
+                            .snapshots(),
+                        builder: (context, subSnapshot) {
+                          if (subSnapshot.connectionState == ConnectionState.waiting) {
+                            return Container();
+                          }
+                          if (!subSnapshot.hasData || subSnapshot.data!.docs.isEmpty) {
+                            return Center(child: TextWidget(title: 'No Requests Found'),);
+                          }
+                          var subRequests = subSnapshot.data!.docs;
+                          return Column(
+                            children: subRequests.map((doc) {
+                              var requestData = doc.data() as Map<String, dynamic>;
+                              print(subRequests.length);
+                              print (requestData.length);
+                              return DonationRequestTile(
+                                needyPersonName: requestData['needyPersonName'] ?? 'Unknown',
+                                reason: requestData['reason'] ?? 'No reason provided',
+                                requestedDate: requestData['created_at'],
+                                amount: requestData['needed_amount'],
+                              );
+                            }).toList(),
+                          );
+
+                        },
+                      );
+                    },
                   );
                 },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+class DonationRequestTile extends StatelessWidget {
+  final String needyPersonName;
+  final String reason;
+  final Timestamp requestedDate;
+  final double amount;
+
+  const DonationRequestTile({
+    Key? key,
+    required this.needyPersonName,
+    required this.reason,
+    required this.requestedDate,
+    required this.amount,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    DateTime dateTime = requestedDate.toDate();
+    String formattedDate = DateFormat('yyyy-MM-dd').format(dateTime); // Format the date
+    return Card(
+      elevation: 5,
+      margin: EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextWidget(
+              title: reason,
+              size: 18,
+              weight: FontWeight.bold,
+            ),
+            SizedBox(height: 10),
+            TextWidget(
+              title: 'Name: $needyPersonName',
+              size: 16,
+            ),
+            SizedBox(height: 10),
+            TextWidget(
+              title: 'Donation Amount: \$${amount}',
+              size: 16,
+              color: Colors.green,
+            ),
+            SizedBox(height: 20),
+            TextWidget(title: 'Requested Date: $formattedDate',
+                size: 14, color: Colors.grey),
+            SizedBox(height: 20),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: GestureDetector(
+                onTap: () {
+                  Get.to(() => PaymentPage());
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.teal.shade800, width: 2),
+                  ),
+                  child: TextWidget(
+                    title: 'Donate',
+                    color: Colors.teal.shade800,
+                  ),
+                ),
               ),
             ),
           ],

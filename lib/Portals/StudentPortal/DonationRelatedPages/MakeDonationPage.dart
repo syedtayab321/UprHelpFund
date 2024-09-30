@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
+import 'package:upr_fund_collection/PaymentRelated/CrPayment.dart';
 import 'package:upr_fund_collection/Portals/StudentPortal/PaymentRelatedPages/PaymentMethodSelector.dart';
 
 class MakeDonationPage extends StatelessWidget {
@@ -105,7 +106,8 @@ class MakeDonationPage extends StatelessWidget {
             Center(
               child: Elevated_button(
                 path: () {
-                 Get.to(PaymentMethodSelector());
+                 // Get.to(PaymentMethodSelector());
+                 Get.to(PaymentPage());
                 },
                 color: Colors.white,
                 backcolor: Colors.teal.shade700,
