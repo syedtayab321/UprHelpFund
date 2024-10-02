@@ -139,7 +139,7 @@ class DonationCard extends StatelessWidget {
                   size: 16, color: Colors.white,
                 ),
                 TextWidget(
-                  title:  '\$${amountNeeded.toString()}',
+                  title:  '${amountNeeded.toString()}',
                   size: 16, color: Colors.green,
                 ),
               ],
@@ -154,7 +154,7 @@ class DonationCard extends StatelessWidget {
                   size: 16, color: Colors.white,
                 ),
                 TextWidget(
-                  title: '\$${amountReceived.toString()}',
+                  title: '${amountReceived.toString()}',
                   size: 16, color: Colors.white,
                 ),
               ],

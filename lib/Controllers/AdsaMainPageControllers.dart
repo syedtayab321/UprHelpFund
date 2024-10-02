@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+
 class AdsaViewDonationModal {
   final String name;
   final String rollNo;
@@ -11,6 +13,17 @@ class AdsaViewDonationModal {
     required this.semester,
     required this.donatedAmount,
   });
+
+  // Factory method to create an instance from Firestore data
+  factory AdsaViewDonationModal.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return AdsaViewDonationModal(
+      name: data['name'] ?? '',
+      rollNo: data['roll_no'] ?? '',
+      semester: data['semester'] ?? '',
+      donatedAmount: (data['donated_amount'] ?? 0).toDouble(),
+    );
+  }
 }
 
 class AdsaDonationController extends GetxController {
@@ -19,20 +32,45 @@ class AdsaDonationController extends GetxController {
   // Observable for currently selected semester
   var selectedSemester = 'Semester 1'.obs;
 
+  // Firestore instance
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   List<AdsaViewDonationModal> getDonationsBySemester(String semester) {
     return donations.where((donation) => donation.semester == semester).toList();
   }
 
-  // Add mock data
+  // Fetch documents and sub-documents from Firestore where department == 'computer'
+  Future<void> fetchDonations() async {
+    try {
+      // Clear existing donations
+      donations.clear();
+
+      // Fetch the main collection 'StudentDonations'
+      final mainCollection = await _firestore.collection('StudentDonations').get();
+
+      for (var doc in mainCollection.docs) {
+        // For each document in 'StudentDonations', fetch the 'needy' sub-collection
+        final subCollection = await _firestore
+            .collection('StudentDonations')
+            .doc(doc.id)
+            .collection('NeedyPersons')
+            .where('department', isEqualTo: 'Computer Science')
+            .get();
+
+        // Iterate over the sub-documents and map the data to AdsaViewDonationModal
+        for (var subDoc in subCollection.docs) {
+          donations.add(AdsaViewDonationModal.fromFirestore(subDoc));
+        }
+      }
+    } catch (e) {
+      print("Error fetching donations: $e");
+    }
+  }
+
   @override
   void onInit() {
-    donations.assignAll([
-      AdsaViewDonationModal(name: 'John Doe', rollNo: '123', semester: 'Semester 1', donatedAmount: 1000),
-      AdsaViewDonationModal(name: 'Jane Smith', rollNo: '124', semester: 'Semester 2', donatedAmount: 1500),
-      AdsaViewDonationModal(name: 'Mark Lee', rollNo: '125', semester: 'Semester 1', donatedAmount: 2000),
-      AdsaViewDonationModal(name: 'Emily Davis', rollNo: '126', semester: 'Semester 3', donatedAmount: 2500),
-    ]);
+    // Fetch data when the controller is initialized
+    fetchDonations();
     super.onInit();
   }
 }
-

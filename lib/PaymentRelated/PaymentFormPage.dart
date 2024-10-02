@@ -1,26 +1,25 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:upr_fund_collection/PaymentRelated/PaymentMaking.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
+import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
+import 'package:upr_fund_collection/PaymentRelated/DonationDatabaseStore.dart';
 
 class PaymentController extends GetxController {
   var selectedPaymentMethod = 'EasyPaisa'.obs;
 }
 
 class PaymentPage extends StatelessWidget {
+  final String needyPersonName;
+  PaymentPage({required this.needyPersonName,});
   final PaymentController controller = Get.put(PaymentController());
-
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController cardNumberController = TextEditingController();
   final TextEditingController cardExpiryController = TextEditingController();
   final TextEditingController cardCvcController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController rollNoController = TextEditingController();
-  final TextEditingController semesterController = TextEditingController();
-  final TextEditingController departmentController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -68,24 +67,28 @@ class PaymentPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Payment Method Dropdown
-                        TextWidget(title: 'Select Payment Method', size: 16, weight: FontWeight.bold),
+                        TextWidget(
+                            title: 'Select Payment Method',
+                            size: 16,
+                            weight: FontWeight.bold),
                         SizedBox(height: 10),
                         Obx(() => DropdownButtonFormField<String>(
-                          value: controller.selectedPaymentMethod.value,
-                          items: paymentMethods.map((String method) {
-                            return DropdownMenuItem<String>(
-                              value: method,
-                              child: Text(method),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            controller.selectedPaymentMethod.value = value!;
-                          },
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                          ),
-                        )),
+                              value: controller.selectedPaymentMethod.value,
+                              items: paymentMethods.map((String method) {
+                                return DropdownMenuItem<String>(
+                                  value: method,
+                                  child: Text(method),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                controller.selectedPaymentMethod.value = value!;
+                              },
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                contentPadding:
+                                    EdgeInsets.symmetric(horizontal: 10),
+                              ),
+                            )),
                         SizedBox(height: 20),
 
                         // Conditional Fields based on Payment Method
@@ -96,7 +99,10 @@ class PaymentPage extends StatelessWidget {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TextWidget(title: 'Mobile Number', size: 16, weight: FontWeight.bold),
+                                  TextWidget(
+                                      title: 'Mobile Number',
+                                      size: 16,
+                                      weight: FontWeight.bold),
                                   SizedBox(height: 10),
                                   TextFormField(
                                     controller: mobileController,
@@ -108,14 +114,18 @@ class PaymentPage extends StatelessWidget {
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter a mobile number';
-                                      } else if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                                      } else if (!RegExp(r'^\d{10}$')
+                                          .hasMatch(value)) {
                                         return 'Enter a valid mobile number (10 digits)';
                                       }
                                       return null;
                                     },
                                   ),
                                   SizedBox(height: 10),
-                                  TextWidget(title: 'Amount', size: 16, weight: FontWeight.bold),
+                                  TextWidget(
+                                      title: 'Amount',
+                                      size: 16,
+                                      weight: FontWeight.bold),
                                   SizedBox(height: 10),
                                   TextFormField(
                                     controller: amountController,
@@ -127,7 +137,8 @@ class PaymentPage extends StatelessWidget {
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter an amount';
-                                      } else if (double.tryParse(value) == null) {
+                                      } else if (double.tryParse(value) ==
+                                          null) {
                                         return 'Enter a valid amount';
                                       }
                                       return null;
@@ -139,7 +150,10 @@ class PaymentPage extends StatelessWidget {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TextWidget(title: 'Card Number', size: 16, weight: FontWeight.bold),
+                                  TextWidget(
+                                      title: 'Card Number',
+                                      size: 16,
+                                      weight: FontWeight.bold),
                                   SizedBox(height: 10),
                                   TextFormField(
                                     controller: cardNumberController,
@@ -151,11 +165,15 @@ class PaymentPage extends StatelessWidget {
                                     maxLength: 19, // 16 digits + 3 spaces
                                     inputFormatters: [
                                       FilteringTextInputFormatter.digitsOnly,
-                                      TextInputFormatter.withFunction((oldValue, newValue) {
+                                      TextInputFormatter.withFunction(
+                                          (oldValue, newValue) {
                                         return TextEditingValue(
                                           text: formatCardNumber(newValue.text),
                                           selection: TextSelection.fromPosition(
-                                            TextPosition(offset: formatCardNumber(newValue.text).length),
+                                            TextPosition(
+                                                offset: formatCardNumber(
+                                                        newValue.text)
+                                                    .length),
                                           ),
                                         );
                                       }),
@@ -163,7 +181,10 @@ class PaymentPage extends StatelessWidget {
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter your card number';
-                                      } else if (value.replaceAll(' ', '').length != 16) {
+                                      } else if (value
+                                              .replaceAll(' ', '')
+                                              .length !=
+                                          16) {
                                         return 'Enter a valid card number (16 digits)';
                                       }
                                       return null;
@@ -182,9 +203,12 @@ class PaymentPage extends StatelessWidget {
                                             labelText: 'Expiry Date',
                                           ),
                                           validator: (value) {
-                                            if (value == null || value.isEmpty) {
+                                            if (value == null ||
+                                                value.isEmpty) {
                                               return 'Please enter expiry date';
-                                            } else if (!RegExp(r'^(0[1-9]|1[0-2])\/?([0-9]{2})$').hasMatch(value)) {
+                                            } else if (!RegExp(
+                                                    r'^(0[1-9]|1[0-2])\/?([0-9]{2})$')
+                                                .hasMatch(value)) {
                                               return 'Enter a valid expiry date (MM/YY)';
                                             }
                                             return null;
@@ -203,7 +227,8 @@ class PaymentPage extends StatelessWidget {
                                           ),
                                           maxLength: 3,
                                           validator: (value) {
-                                            if (value == null || value.isEmpty) {
+                                            if (value == null ||
+                                                value.isEmpty) {
                                               return 'Please enter CVC';
                                             } else if (value.length != 3) {
                                               return 'Enter a valid CVC (3 digits)';
@@ -215,7 +240,10 @@ class PaymentPage extends StatelessWidget {
                                     ],
                                   ),
                                   SizedBox(height: 10),
-                                  TextWidget(title: 'Amount', size: 16, weight: FontWeight.bold),
+                                  TextWidget(
+                                      title: 'Amount',
+                                      size: 16,
+                                      weight: FontWeight.bold),
                                   SizedBox(height: 10),
                                   TextFormField(
                                     controller: amountController,
@@ -227,7 +255,8 @@ class PaymentPage extends StatelessWidget {
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter an amount';
-                                      } else if (double.tryParse(value) == null) {
+                                      } else if (double.tryParse(value) ==
+                                          null) {
                                         return 'Enter a valid amount';
                                       }
                                       return null;
@@ -239,89 +268,11 @@ class PaymentPage extends StatelessWidget {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TextWidget(title: 'Name', size: 16, weight: FontWeight.bold),
                                   SizedBox(height: 10),
-                                  TextFormField(
-                                    controller: nameController,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'Enter your name',
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your name';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  SizedBox(height: 10),
-                                  TextWidget(title: 'Email', size: 16, weight: FontWeight.bold),
-                                  SizedBox(height: 10),
-                                  TextFormField(
-                                    controller: emailController,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'Enter your email',
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your email';
-                                      } else if (!GetUtils.isEmail(value)) {
-                                        return 'Enter a valid email';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  SizedBox(height: 10),
-                                  TextWidget(title: 'Roll Number', size: 16, weight: FontWeight.bold),
-                                  SizedBox(height: 10),
-                                  TextFormField(
-                                    controller: rollNoController,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'Enter your roll number',
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your roll number';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  SizedBox(height: 10),
-                                  TextWidget(title: 'Semester', size: 16, weight: FontWeight.bold),
-                                  SizedBox(height: 10),
-                                  TextFormField(
-                                    controller: semesterController,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'Enter your semester',
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your semester';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  SizedBox(height: 10),
-                                  TextWidget(title: 'Department', size: 16, weight: FontWeight.bold),
-                                  SizedBox(height: 10),
-                                  TextFormField(
-                                    controller: departmentController,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'Enter your department',
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your department';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  SizedBox(height: 10),
-                                  TextWidget(title: 'Amount', size: 16, weight: FontWeight.bold),
+                                  TextWidget(
+                                      title: 'Amount',
+                                      size: 16,
+                                      weight: FontWeight.bold),
                                   SizedBox(height: 10),
                                   TextFormField(
                                     controller: amountController,
@@ -333,7 +284,8 @@ class PaymentPage extends StatelessWidget {
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter an amount';
-                                      } else if (double.tryParse(value) == null) {
+                                      } else if (double.tryParse(value) ==
+                                          null) {
                                         return 'Enter a valid amount';
                                       }
                                       return null;
@@ -347,7 +299,8 @@ class PaymentPage extends StatelessWidget {
                         }),
                         SizedBox(height: 20),
                         Center(
-                          child: Elevated_button(
+                          child:
+                          Elevated_button(
                             text: 'Pay Now',
                             color: Colors.white,
                             backcolor: Colors.teal.shade800,
@@ -355,43 +308,28 @@ class PaymentPage extends StatelessWidget {
                             width: Get.width,
                             radius: 10,
                             path: () async {
-                              PaymentProcessor paymentProcessor = PaymentProcessor();
-
-                              double amount = double.parse(
-                                  amountController.text);
-                              if (_formKey.currentState!.validate()) {
-                                if (controller.selectedPaymentMethod.value ==
-                                    'EasyPaisa' ||
-                                    controller.selectedPaymentMethod.value ==
-                                        'JazzCash') {
-                                  // Call the processMobilePayment function for EasyPaisa/JazzCash
-                                  await paymentProcessor.processMobilePayment(
-                                    mobileController.text,
-                                    controller.selectedPaymentMethod.value,
-                                    amount,
-                                  );
-                                } else
-                                if (controller.selectedPaymentMethod.value ==
-                                    'Credit Card') {
-                                  // Call the processCardPayment function for Credit Card
-                                  await paymentProcessor.processCardPayment(
-                                    cardNumber: cardNumberController.text,
-                                    expiryDate: cardExpiryController.text,
-                                    cvc: cardCvcController.text,
-                                    amount: amount, // Pass amount
-                                  );
-                                } else
-                                if (controller.selectedPaymentMethod.value ==
-                                    'Pay by Hand') {
-                                  await paymentProcessor.processManualPayment(
-                                    name: nameController.text,
-                                    email: emailController.text,
-                                    rollNo: rollNoController.text,
-                                    semester: semesterController.text,
-                                    department: departmentController.text,
-                                    amount: amount, // Pass amount
-                                  );
-                                }
+                              try{
+                                User? user = FirebaseAuth.instance.currentUser;
+                                DocumentSnapshot<Map<String, dynamic>> UserData =
+                                await FirebaseFirestore.instance
+                                    .collection('Users')
+                                    .doc(user!.uid)
+                                    .get();
+                                await storeDonationData(
+                                  studentId: user.uid,
+                                  name: UserData['name'],
+                                  email: UserData['email'],
+                                  donatedAmount: double.parse(amountController.text),
+                                  semester: UserData['semester'],
+                                  department: UserData['department'],
+                                  rollNo: UserData['roll_no'],
+                                  needyPersonName: this.needyPersonName,
+                                );
+                              }
+                              catch (e){
+                                showErrorSnackbar(e.toString());
+                              }finally{
+                                amountController.clear();
                               }
                             },
                           ),

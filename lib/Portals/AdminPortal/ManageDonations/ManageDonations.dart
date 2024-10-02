@@ -119,7 +119,7 @@ class DonationPage extends StatelessWidget {
                           bank_name: data['bank_name'] ?? '',
                           accountHolderName: data['account_holder_name'] ?? '',
                           accountNumber: data['account_number'] ?? '',
-                          requested_by: data['request_by'] ?? '',
+                          requested_by: data['request_person_name'] ?? '',
                           amountNeeded: data['needed_amount']?.toDouble() ?? 0.0,
                           amountReceived: data['amount_received'].toString(),
                           onDelete: () async{
@@ -132,7 +132,7 @@ class DonationPage extends StatelessWidget {
                             }
                           },
                           onViewDonors: () {
-                            Get.to(AdminViewDonorsPage());
+                            Get.to(AdminViewDonorsPage(needyPerson:data['needyPersonName'],));
                           },
                         ),
                       );

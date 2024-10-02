@@ -7,7 +7,7 @@ import 'package:upr_fund_collection/CustomWidgets/ConfirmDialogBox.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
 import 'package:upr_fund_collection/Models/LoginSharedPrefrencses.dart';
-import 'package:upr_fund_collection/PaymentRelated/CrPayment.dart';
+import 'package:upr_fund_collection/PaymentRelated/PaymentFormPage.dart';
 import 'package:upr_fund_collection/Portals/CrPortal/CrViewDonations.dart';
 
 class CrHomePage extends StatefulWidget {
@@ -199,7 +199,7 @@ class DonationRequestTile extends StatelessWidget {
               alignment: Alignment.bottomRight,
               child: GestureDetector(
                 onTap: () {
-                  Get.to(() => PaymentPage());
+                  Get.to(() => PaymentPage(needyPersonName: needyPersonName,));
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),

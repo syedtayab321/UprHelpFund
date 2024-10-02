@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/Controllers/CrMainController.dart';
@@ -36,8 +37,12 @@ class _CrViewDonationPageState extends State<CrViewDonationPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal.shade800,
-        title: TextWidget(title: 'Donation Management',
-          size: 24, weight: FontWeight.bold,color: Colors.white,),
+        title: TextWidget(
+          title: 'Donation Management',
+          size: 24,
+          weight: FontWeight.bold,
+          color: Colors.white,
+        ),
         centerTitle: true,
       ),
       body: LayoutBuilder(
@@ -47,28 +52,9 @@ class _CrViewDonationPageState extends State<CrViewDonationPage> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade700,
-                      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon: Icon(Icons.add, size: 24),
-                    label: TextWidget(title: 'Add Donation', size: 18,color: Colors.white,),
-                    onPressed: () {
-                      // Navigate to Add Donation Page
-                    },
-                  ),
-
                   SizedBox(height: 30),
-
-                  // Filters for viewing donations with responsive design
                   _buildFilterSection(controller, constraints),
-
                   SizedBox(height: 20),
-
-                  // Filtered Donations List with better styling
                   _buildDonationList(constraints),
                 ],
               ),
@@ -79,7 +65,6 @@ class _CrViewDonationPageState extends State<CrViewDonationPage> {
     );
   }
 
-  // Build Filter Section with a responsive design
   Widget _buildFilterSection(CrMainDonationController controller, BoxConstraints constraints) {
     return Container(
       padding: EdgeInsets.all(16),
@@ -89,7 +74,7 @@ class _CrViewDonationPageState extends State<CrViewDonationPage> {
       ),
       child: Column(
         children: [
-          if (constraints.maxWidth > 600) // For wider screens, use row layout
+          if (constraints.maxWidth > 600)
             Row(
               children: [
                 Expanded(child: _buildDropdown('Department', controller.departments, controller.selectedDepartment, controller)),
@@ -97,7 +82,7 @@ class _CrViewDonationPageState extends State<CrViewDonationPage> {
                 Expanded(child: _buildDropdown('Semester', controller.semesters, controller.selectedSemester, controller)),
               ],
             )
-          else // For smaller screens, use column layout
+          else
             Column(
               children: [
                 _buildDropdown('Department', controller.departments, controller.selectedDepartment, controller),
@@ -110,7 +95,6 @@ class _CrViewDonationPageState extends State<CrViewDonationPage> {
     );
   }
 
-  // Build Dropdown Widget
   Widget _buildDropdown(String label, List<String> items, RxString selectedValue, CrMainDonationController controller) {
     return Obx(() {
       return DropdownButtonFormField<String>(
@@ -135,28 +119,93 @@ class _CrViewDonationPageState extends State<CrViewDonationPage> {
     });
   }
 
-  // Build Donation List with responsive layout
   Widget _buildDonationList(BoxConstraints constraints) {
     return Obx(() {
+      if (controller.filteredDonations.isEmpty) {
+        return Center(child: Text('No donations found.'));
+      }
       return ListView.builder(
         shrinkWrap: true,
         physics: NeverScrollableScrollPhysics(),
         itemCount: controller.filteredDonations.length,
         itemBuilder: (context, index) {
           final donation = controller.filteredDonations[index];
+
+          // Extract donation details
+          final name = donation['name'] ?? 'N/A';  // Make sure to handle null values
+          final rollNo = donation['roll_no'] ?? 'N/A';
+          final donatedAmount = donation['donated_amount'] ?? '0';
+          final donatedDate = donation['donated_date'] != null
+              ? (donation['donated_date'] as Timestamp).toDate().toString()
+              : 'N/A';
+
           return Card(
             elevation: 5,
             margin: EdgeInsets.symmetric(vertical: 10),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-              leading: Icon(Icons.monetization_on, color: Colors.green),
-              title: Text('${donation['department']} - ${donation['semester']}'),
-              subtitle: Text('Donation Amount: ${donation['amount']}'),
-              trailing: Icon(Icons.arrow_forward_ios, size: 16),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.person, color: Colors.teal),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Name: $name',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.format_list_numbered, color: Colors.orange),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Roll No: $rollNo',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.monetization_on, color: Colors.green),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Donation Amount: \$${donatedAmount.toString()}',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.date_range, color: Colors.blue),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Donated Date: $donatedDate',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
         },
       );
     });
   }
+
 }

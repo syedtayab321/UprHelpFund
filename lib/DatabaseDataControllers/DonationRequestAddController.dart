@@ -5,7 +5,7 @@ import 'package:upr_fund_collection/CustomWidgets/Snakbar.dart';
 class DonationRequestAddController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   RxBool isloading =false.obs;
-
+  double amountRecived=0.0;
   Future<void> addDonationRequest({
     required String personName,
     required String reason,
@@ -33,7 +33,7 @@ class DonationRequestAddController extends GetxController {
         'request_person_semester': requested_person_semester,
         'department': requested_person_department,
         'bank_name': bank_name,
-        'amount_received': 0,
+        'amount_received': amountRecived,
         'created_at': FieldValue.serverTimestamp(),
         'status':status
       });

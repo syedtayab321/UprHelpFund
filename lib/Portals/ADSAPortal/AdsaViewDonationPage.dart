@@ -35,6 +35,8 @@ class AdsaViewDonationPage extends StatelessWidget {
                   buildSemesterButton('Semester 4'), SizedBox(width: 10,),
                   buildSemesterButton('Semester 5'), SizedBox(width: 10,),
                   buildSemesterButton('Semester 6'), SizedBox(width: 10,),
+                  buildSemesterButton('Semester 7'), SizedBox(width: 10,),
+                  buildSemesterButton('Semester 8'), SizedBox(width: 10,),
                 ],
               ),
             ),

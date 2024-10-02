@@ -158,7 +158,7 @@ class DonationRequestTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Reason: $reason', style: TextStyle(fontSize: 16)),
-            Text('Requested Date: $formattedDate', style: TextStyle(fontSize: 14, color: Colors.grey)), // Display the formatted date
+            Text('Requested Date: $formattedDate', style: TextStyle(fontSize: 14, color: Colors.grey)),
           ],
         ),
         trailing: Icon(Icons.arrow_forward_ios, color: Colors.teal),

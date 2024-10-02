@@ -4,13 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:upr_fund_collection/CustomWidgets/ElevatedButton.dart';
 import 'package:upr_fund_collection/CustomWidgets/TextWidget.dart';
-import 'package:upr_fund_collection/PaymentRelated/CrPayment.dart';
-import 'package:upr_fund_collection/Portals/StudentPortal/PaymentRelatedPages/PaymentMethodSelector.dart';
-
+import 'package:upr_fund_collection/PaymentRelated/PaymentFormPage.dart';
 class MakeDonationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Get the passed arguments (request data)
     final requestData = Get.arguments as Map<String, dynamic>;
 
     // Extract the data from the passed arguments
@@ -106,8 +103,7 @@ class MakeDonationPage extends StatelessWidget {
             Center(
               child: Elevated_button(
                 path: () {
-                 // Get.to(PaymentMethodSelector());
-                 Get.to(PaymentPage());
+                 Get.to(PaymentPage(needyPersonName: needyName,));
                 },
                 color: Colors.white,
                 backcolor: Colors.teal.shade700,

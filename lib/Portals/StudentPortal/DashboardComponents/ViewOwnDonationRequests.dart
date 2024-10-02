@@ -77,9 +77,15 @@ class DonorDonationRequestPage extends StatelessWidget {
                       ),
                       SizedBox(height: 8),
                       TextWidget(
-                        title: 'Needed Amount: \$${request['needed_amount']}',
+                        title: 'Needed Amount: ${request['needed_amount']}',
                         size: 16,
                           color: Colors.grey.shade800,
+                      ),
+                      SizedBox(height: 8),
+                      TextWidget(
+                        title: 'Received Amount: ${request['amount_received']}',
+                        size: 16,
+                        color: Colors.grey.shade800,
                       ),
                       SizedBox(height: 8),
                       TextWidget(
@@ -98,13 +104,13 @@ class DonorDonationRequestPage extends StatelessWidget {
                         ),
                         SizedBox(height: 8),
                         LinearProgressIndicator(
-                          value: request['amount_received'].toDouble(),
+                          value: request['amount_received']/request['needed_amount'].toDouble(),
                           backgroundColor: Colors.teal.shade100,
                           color: Colors.teal.shade700,
                         ),
                         SizedBox(height: 8),
                         Text(
-                          '${(request['amount_received'] * 100).toDouble()}% of the goal raised',
+                          '${(request['amount_received']/request['needed_amount'] * 100).toDouble()}% of the goal raised',
                           style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                         ),
                       ],

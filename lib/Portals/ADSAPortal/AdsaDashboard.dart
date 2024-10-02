@@ -15,11 +15,44 @@ class _ADSADashboardPageState extends State<ADSADashboardPage> {
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = "";
   final AuthService _authService = AuthService();
+
   // Search function to filter departments
   void _searchDepartments(String query) {
     setState(() {
       searchQuery = query.toLowerCase();
     });
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchDepartments() async {
+    List<Map<String, dynamic>> allDepartments = [];
+
+    // Fetch all documents from Donations collection
+    QuerySnapshot donationsSnapshot = await FirebaseFirestore.instance.collection('StudentDonations').get();
+
+    // Iterate over each document to fetch subdocuments
+    for (var document in donationsSnapshot.docs) {
+      QuerySnapshot subDocsSnapshot = await FirebaseFirestore.instance
+          .collection('StudentDonations')
+          .doc(document.id)
+          .collection('NeedyPersons')
+          .get();
+
+      // Extract department data from subdocuments
+      for (var subDoc in subDocsSnapshot.docs) {
+        final departmentData = subDoc.data() as Map<String, dynamic>;
+        final departmentName = departmentData['department'] ?? 'Unknown';
+
+        // Filter based on search query
+        if (departmentName.toLowerCase().contains(searchQuery)) {
+          allDepartments.add({
+            'departmentName': departmentName,
+            'data': departmentData,
+          });
+        }
+      }
+    }
+
+    return allDepartments;
   }
 
   void logout(BuildContext context) async {
@@ -38,15 +71,16 @@ class _ADSADashboardPageState extends State<ADSADashboardPage> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: TextWidget(title: 'ADSA Home Page',color:Colors.white),
+        title: TextWidget(title: 'ADSA Home Page', color: Colors.white),
         actions: [
           IconButton(
             icon: Icon(Icons.logout, color: Colors.white),
-            onPressed: (){
+            onPressed: () {
               logout(context);
             },
           ),
@@ -75,10 +109,10 @@ class _ADSADashboardPageState extends State<ADSADashboardPage> {
             ),
           ),
 
-          // StreamBuilder for real-time updates
+          // FutureBuilder for fetching departments and rendering UI
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('Donations').snapshots(),
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: _fetchDepartments(), // Fetch departments asynchronously
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -88,23 +122,20 @@ class _ADSADashboardPageState extends State<ADSADashboardPage> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
-                // Filtering based on search query
-                final departments = snapshot.data!.docs.where((doc) {
-                  final departmentName = doc.id.toLowerCase();
-                  return departmentName.contains(searchQuery);
-                }).toList();
+                final allDepartments = snapshot.data ?? [];
 
-                if (departments.isEmpty) {
+                if (allDepartments.isEmpty) {
                   return Center(child: Text('No departments found'));
                 }
 
+                // Displaying the departments
                 return ListView.builder(
-                  itemCount: departments.length,
+                  itemCount: allDepartments.length,
                   itemBuilder: (context, index) {
-                    String departmentName = departments[index].id;
+                    String departmentName = allDepartments[index]['departmentName'];
+
                     return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       child: Card(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
@@ -119,15 +150,14 @@ class _ADSADashboardPageState extends State<ADSADashboardPage> {
                               child: Icon(Icons.business, color: Colors.white),
                             ),
                             title: TextWidget(
-                                title:  departmentName,
+                                title: departmentName,
                                 size: 24,
-                                color: Colors.white
-                            ),
-                            trailing: Icon(Icons.arrow_forward_ios,
-                                color: Colors.white
-                            ),
+                                color: Colors.white),
+                            trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
                             onTap: () {
-                              Get.to(AdsaViewDonationPage());
+                              Get.to(() => AdsaViewDonationPage(
+                                // departmentData: allDepartments[index]['data'],
+                              ));
                             },
                           ),
                         ),

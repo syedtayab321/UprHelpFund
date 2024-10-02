@@ -51,7 +51,6 @@ dependencies:
   flutter_stripe: ^11.1.0
   firebase_messaging: ^14.7.10
   cloud_functions: ^4.7.6
-  stripe_payment: ^1.1.4
 
 dev_dependencies:
   flutter_test:
